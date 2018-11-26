@@ -1,0 +1,24 @@
+{
+  "name": "spi-api",
+  "version": "1.0.0",
+  "description": "API para el proyecto final de Sistema de Posicionamiento en Interiores",
+  "scripts": {
+    "start": "nodemon server.js",
+    "pretest": "eslint ."
+  },
+  "devDependencies": {
+    "eslint": "^5.9.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "nodemon": "^1.18.4"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
+    "express": "^4.16.4",
+    "mongoose": "^5.3.5"
+  }
+}
