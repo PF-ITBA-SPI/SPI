@@ -6,7 +6,7 @@ const port = process.env.PORT || 4000
 
 const mongoose = require('mongoose')
 
-const Task = require('./api/models/todoListModel')
+// const Task = require('./api/models/todoListModel') TODO uncomment and adapt
 
 const cors = require('cors')
 const bodyParser = require('body-parser')
