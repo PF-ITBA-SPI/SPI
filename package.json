@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "API para el proyecto final de Sistema de Posicionamiento en Interiores",
   "engines": {
-    "node": ">= 10.9.0 < 11"
+    "node": "10.9.0"
   },
   "scripts": {
     "start": "nodemon server.js",
