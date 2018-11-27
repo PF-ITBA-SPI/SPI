@@ -1,12 +1,14 @@
+require('dotenv').config()
+
 const express = require('express')
 
 const app = express()
 
-const port = process.env.PORT || 4000
+const port = process.env.PORT
 
 const mongoose = require('mongoose')
 
-// const Task = require('./api/models/todoListModel') TODO uncomment and adapt
+/* const Task = */ require('./api/models/todoListModel')
 
 const cors = require('cors')
 const bodyParser = require('body-parser')
@@ -14,7 +16,7 @@ const bodyParser = require('body-parser')
 // mongoose instance connection url connection
 mongoose.Promise = global.Promise
 // connect directly to mongoose
-mongoose.connect('mongodb://localhost/spi', { useNewUrlParser: true }).then(
+mongoose.connect(process.env.DB_URL, { useNewUrlParser: true }).then(
   (res) => {
     console.log('Successfully connected to the database.')
   }
