@@ -29,7 +29,9 @@ your local machine for development and testing purposes.
 ## Running
 
 - Development mode: `npm start`
-- Production mode: `npm run prod`
+- Production mode: `npm run prod` — Note that unless you set the
+`MONGODB_URI` environment variable, the app will use the value in the
+`.env` file.
 
 ## Running the tests
 
@@ -46,7 +48,11 @@ the linter must pass in CI before merging pull requests.
 
 ## Deployment
 
-**TODO**
+1. Create a Pull Request
+1. Get it approved and make sure CI passes
+1. Merge to `master`
+1. Commits to `master` are automatically deployed to Heroku after a
+successful build in Travis.
 
 ## Authors
 
