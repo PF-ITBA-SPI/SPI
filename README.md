@@ -28,9 +28,8 @@ your local machine for development and testing purposes.
 
 ## Running
 
-1. `npm start`
-
-Done!
+- Development mode: `npm start`
+- Production mode: `npm run prod`
 
 ## Running the tests
 
