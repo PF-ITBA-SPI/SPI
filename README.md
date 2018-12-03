@@ -28,10 +28,12 @@ your local machine for development and testing purposes.
 
 ## Running
 
-- Development mode: `npm start`
-- Production mode: `npm run prod` — Note that unless you set the
-`MONGODB_URI` environment variable, the app will use the value in the
-`.env` file.
+0. Copy `.env.example` to `.env` and set appropriate values (or set all
+those environment variables externally yourself, those take precedence
+over `.env`)
+1. Start the app:
+    - Development mode: `npm start`
+    - Production mode: `npm run prod`
 
 ## Running the tests
 
