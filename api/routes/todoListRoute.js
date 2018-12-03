@@ -1,5 +1,7 @@
 'use strict'
 
+// For future reference.  TODO delete
+
 module.exports = function (app) {
   const todoList = require('../controllers/todoListController')
 

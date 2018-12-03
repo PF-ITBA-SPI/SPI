@@ -1,3 +1,7 @@
+'use strict'
+
+// For future reference. TODO delete
+
 // in this controller, we would be writing five different function
 // *list all task
 // *read a task
@@ -9,8 +13,6 @@
 // findById,
 // findOneAndUpdate,
 // save and remove.
-
-'use strict'
 
 const mongoose = require('mongoose')
 

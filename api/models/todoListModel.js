@@ -1,4 +1,7 @@
 'use strict'
+
+// For future reference. TODO delete
+
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 

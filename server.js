@@ -1,49 +1,69 @@
-require('dotenv').config()
+'use strict'
 
-const express = require('express')
+require('dotenv-safe').config()
 
-const app = express()
+// Overwrite console.* to use namespaced logs
+require('./api/util/logger')
 
-const port = process.env.PORT
+/**
+ * Connect to the current environment's database.
+ *
+ * @returns {Promise} Promise that resolves on successful connection, and <b>terminates the program on error</b>.
+ */
+const connectToDb = () => {
+  const mongoose = require('mongoose')
 
-const mongoose = require('mongoose')
+  // Set up mongoose, connect to DB
+  mongoose.Promise = global.Promise
+  console.debug('Connecting to database...')
+  return mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true })
+    .catch(err => {
+      console.error('Connection to database failed:', err)
+      process.exit(1)
+    })
+}
 
-/* const Task = */ require('./api/models/todoListModel')
+/**
+ * Start the express server.
+ */
+const startServer = () => {
+  const express = require('express')
+  const cors = require('cors')
+  const bodyParser = require('body-parser')
 
-const cors = require('cors')
-const bodyParser = require('body-parser')
+  // Set up express app and middlewares
+  const app = express()
+  const port = process.env.PORT
+  app.use(cors())
+  app.use(bodyParser.json())
 
-// mongoose instance connection url connection
-mongoose.Promise = global.Promise
-// connect directly to mongoose
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true }).then(
-  (res) => {
-    console.log('Successfully connected to the database.')
-  }
-).catch(() => {
-  console.log('Conntection to database failed.')
-})
-app.use(cors())
-app.use(bodyParser.json())
+  const maps = require('./api/routes/maps')
+  app.use('/maps', maps)
 
-// parse incoming requests
-app.use(bodyParser.json())
-// app.use(bodyParser.urlencoded({ extended: false }))
+  app.get('/', (req, res) => {
+    res.status(200).send('spi-api')
+  })
 
-const routes = require('./api/routes/todoListRoute') // importing route
-routes(app)
-console.log(routes)
-// register the route file
+  app.get('/ping', (req, res) => {
+    res.status(200).send('pong')
+  })
 
-app.get('/', (req, res) => {
-  res.send('hey').status(200)
-})
+  // middleware added to check if user enters not found route
+  app.use((req, res) => {
+    res.status(404).send({ url: req.originalUrl + ' not found' })
+  })
 
-// middleware added to check if user enters not found route
-app.use(function (req, res) {
-  res.status(404).send({ url: req.originalUrl + ' not found' })
-})
+  app.listen(port)
 
-app.listen(port)
+  console.log(`spi-api started on port ${port}`)
+}
 
-console.log(`spi-api server started on port ${port}`)
+/* *********************************************************************************************************************
+                                                  ACTUAL CODE
+ * ********************************************************************************************************************/
+console.log('App started in', process.env.NODE_ENV, 'mode')
+connectToDb()
+  .then(() => {
+    console.log('Successfully connected to database.')
+  })
+  .then(startServer)
