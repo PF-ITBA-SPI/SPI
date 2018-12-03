@@ -5,16 +5,16 @@ const Schema = mongoose.Schema
 const MapSchema = new Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   created_at: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updated_at: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 })
 
 module.exports = mongoose.model('Map', MapSchema)

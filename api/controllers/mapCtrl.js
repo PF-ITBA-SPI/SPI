@@ -45,7 +45,7 @@ module.exports = {
     })
   },
 
-  delete: (req, res) => {
+  delete: (req, _res) => {
     Map.remove({ _id: req.params.mapId }, function (err, res) {
       if (err) {
         res.send(err)
