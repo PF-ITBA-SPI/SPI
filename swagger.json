@@ -1,0 +1,108 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "SPI API",
+    "description": "API for indoor positioning system - final project",
+    "version": "1.0.0"
+  },
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/": {
+      "get": {
+        "x-swagger-router-controller": "root",
+        "operationId": "root",
+        "summary": "Root endpoint",
+        "description": "Echoes app name",
+        "tags": ["/"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Ok"
+          }
+        }
+      }
+    },
+    "/ping": {
+      "get": {
+        "x-swagger-router-controller": "root",
+        "operationId": "ping",
+        "summary": "Ping endpoint",
+        "description": "Responds with 'pong'",
+        "tags": ["/"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Ok"
+          }
+        }
+      }
+    },
+    "/maps": {
+      "get": {
+        "x-swagger-router-controller": "maps",
+        "operationId": "list",
+        "summary": "Get all maps",
+        "description": "",
+        "tags": ["/maps"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Ok"
+          }
+        }
+      },
+      "post": {
+        "x-swagger-router-controller": "maps",
+        "operationId": "create",
+        "summary": "Add a new map",
+        "tags": ["/maps"],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "payload",
+            "description": "Map payload",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+            },
+            "examples": {
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+
+  },
+  "securityDefinitions": {
+    "ApiKey": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "X-API-Key"
+    }
+  }
+}
