@@ -22,4 +22,4 @@ const FloorSchema = new Schema({
   },
 })
 
-module.exports = mongoose.model('Map', FloorSchema)
+module.exports = mongoose.model('Floor', FloorSchema)

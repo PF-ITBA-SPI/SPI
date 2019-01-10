@@ -14,4 +14,4 @@ const BuildingSchema = new Schema({
   },
 })
 
-module.exports = mongoose.model('Map', BuildingSchema)
+module.exports = mongoose.model('Building', BuildingSchema)
