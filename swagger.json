@@ -93,6 +93,68 @@
           }
         }
       }
+    },
+    "/buildings": {
+      "post": {
+        "x-swagger-router-controller": "buildings",
+        "operationId": "create",
+        "summary": "Create a new building",
+        "tags": ["/buildings"],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "payload",
+            "description": "Map payload",
+            "schema": {
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+            },
+            "examples": {
+            }
+          }
+        }
+      },
+      "get": {
+        "x-swagger-router-controller": "buildings",
+        "operationId": "list",
+        "summary": "Get all buildings",
+        "description": "",
+        "tags": ["/buildings"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Ok"
+          }
+        }
+      }
+    },
+    "/buildings/{id}": {
+      "get": {
+        "x-swagger-router-controller": "buildings",
+        "operationId": "get",
+        "summary": "Get building by id",
+        "description": "",
+        "tags": ["/buildings"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Ok"
+          }
+        }
+      }
     }
   },
   "definitions": {
