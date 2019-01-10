@@ -34,6 +34,7 @@ over `.env`)
 1. Start the app:
     - Development mode: `npm start`
     - Production mode: `npm run prod`
+1. Browse the interactive documentation by visiting `/api-docs`
 
 ## Running the tests
 
@@ -47,6 +48,12 @@ We use `eslint` extending rules from [standard](https://standardjs.com/rules.htm
 For development, we use `pre-commit` to automatically run the linter before
 committing. While this cam be skipped (with `git commit -n` or `git commit --no-verify`),
 the linter must pass in CI before merging pull requests.
+
+The API's endpoints are documented following the OpenAPI 2.0 spec (formerly
+known as Swagger).  We use `swagger-express-router` to map the endpoints
+to code, so all routing is driven from the Swagger documentation.  Also
+thanks to this the API has a browsable, interactive documentation endpoint
+`/api-docs` powered by `swagger-ui-express`.
 
 ## Deployment
 

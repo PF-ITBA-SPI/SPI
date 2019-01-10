@@ -37,18 +37,21 @@ const startServer = () => {
   app.use(cors())
   app.use(bodyParser.json())
 
-  const maps = require('./api/routes/maps')
-  app.use('/maps', maps)
+  // Map API endpoint routes from documentation to code
+  console.debug('Mapping routes from API spec...')
+  const swagger = require('swagger-express-router')
+  const swaggerDocument = require('./swagger.json')
+  const controllerMappings = {
+    root: require('./api/controllers/root'),
+    maps: require('./api/controllers/maps')
+  }
+  swagger.setUpRoutes(controllerMappings, app, swaggerDocument)
 
-  app.get('/', (req, res) => {
-    res.status(200).send('spi-api')
-  })
+  // Serve interactive documentation endpoint (Swagger UI)
+  const swaggerUi = require('swagger-ui-express')
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
-  app.get('/ping', (req, res) => {
-    res.status(200).send('pong')
-  })
-
-  // middleware added to check if user enters not found route
+  // Default (ie. catch-all) route: 404 not found
   app.use((req, res) => {
     res.status(404).send({ url: req.originalUrl + ' not found' })
   })
