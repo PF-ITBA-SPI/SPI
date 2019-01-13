@@ -7,7 +7,7 @@ const Building = mongoose.model('Building')
 module.exports = {
   create: (req, res) => {
     const building = new Building(req.body)
-    building.save(function (err, building) { // call the save method on the instance of the model in a callback way
+    building.save((err, building) => { // call the save method on the instance of the model in a callback way
       if (err) {
         res.send(err)
       }
@@ -16,7 +16,7 @@ module.exports = {
   },
 
   list: (req, res) => {
-    Building.find({}, function (err, building) {
+    Building.find({}, (err, building) => {
       if (err) {
         res.send(err).status(200)
       }
@@ -25,7 +25,7 @@ module.exports = {
   },
 
   get: (req, res) => {
-    Building.findById(req.query.id, function (err, building) {
+    Building.findById(req.query.id, (err, building) => {
       if (err) {
         res.send(err)
       } else if (building === null) {
@@ -37,7 +37,7 @@ module.exports = {
   },
 
   update: (req, res) => {
-    Building.findOneAndUpdate({ _id: req.query.id }, req.body, { new: true }, function (err, building) {
+    Building.findOneAndUpdate({ _id: req.query.id }, req.body, { new: true }, (err, building) => {
       if (err) {
         res.send(err)
       }
@@ -46,7 +46,7 @@ module.exports = {
   },
 
   delete: (req, _res) => {
-    Building.remove({ _id: req.query.id }, function (err, res) {
+    Building.remove({ _id: req.query.id }, (err, res) => {
       if (err) {
         res.send(err)
       }

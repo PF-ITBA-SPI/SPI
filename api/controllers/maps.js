@@ -7,7 +7,7 @@ const Map = mongoose.model('Map')
 module.exports = {
   create: (req, res) => {
     const map = new Map(req.body)
-    map.save(function (err, map) { // call the save method on the instance of the model in a callback way
+    map.save((err, map) => { // call the save method on the instance of the model in a callback way
       if (err) {
         res.send(err)
       }
@@ -16,7 +16,7 @@ module.exports = {
   },
 
   list: (req, res) => {
-    Map.find({}, function (err, map) {
+    Map.find({}, (err, map) => {
       if (err) {
         res.send(err).status(200)
       }
@@ -25,7 +25,7 @@ module.exports = {
   },
 
   get: (req, res) => {
-    Map.findById(req.params.mapId, function (err, map) {
+    Map.findById(req.params.mapId, (err, map) => {
       if (err) {
         res.send(err)
       } else if (map === null) {
@@ -37,7 +37,7 @@ module.exports = {
   },
 
   update: (req, res) => {
-    Map.findOneAndUpdate({ _id: req.params.mapId }, req.body, { new: true }, function (err, map) {
+    Map.findOneAndUpdate({ _id: req.params.mapId }, req.body, { new: true }, (err, map) => {
       if (err) {
         res.send(err)
       }
@@ -46,7 +46,7 @@ module.exports = {
   },
 
   delete: (req, _res) => {
-    Map.remove({ _id: req.params.mapId }, function (err, res) {
+    Map.remove({ _id: req.params.mapId }, (err, res) => {
       if (err) {
         res.send(err)
       }
