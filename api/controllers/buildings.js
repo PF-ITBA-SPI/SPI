@@ -5,52 +5,99 @@ require('../models/Building') // Register model
 const Building = mongoose.model('Building')
 
 module.exports = {
-  create: (req, res) => {
+  create: async (req, res) => {
     const building = new Building(req.body)
-    building.save((err, building) => { // call the save method on the instance of the model in a callback way
-      if (err) {
-        res.send(err)
+    try {
+      await building.save()
+      res.status(201).json({ message: 'Building successfully created' })
+    } catch (err) {
+      res.status(400).json(err)
+    }
+  },
+
+  list: async (req, res) => {
+    const query = Building.find({})
+
+    query.lean()
+
+    try {
+      const buildings = await query.exec()
+
+      if (buildings === null) {
+        return res.status(404).json({})
       }
+
+      res.json(buildings)
+    } catch (err) {
+      res.status(400).json(err)
+    }
+  },
+
+  get: async (req, res) => {
+    const query = Building.findById(req.query.id)
+
+    query.lean()
+
+    try {
+      const building = await query.exec()
+
+      if (building === null) {
+        return res.status(404).json({})
+      }
+
       res.json(building)
-    })
+    } catch (err) {
+      res.status(400).json(err)
+    }
   },
 
-  list: (req, res) => {
-    Building.find({}, (err, building) => {
-      if (err) {
-        res.send(err).status(200)
+  update: async (req, res) => {
+    const query = Building.findOneAndUpdate({ _id: req.query.id }, req.body, { new: true })
+
+    query.lean()
+
+    try {
+      const building = await query.exec()
+
+      if (building === null) {
+        return res.status(404).json({})
       }
+
       res.json(building)
-    })
+    } catch (err) {
+      res.status(400).json(err)
+    }
   },
 
-  get: (req, res) => {
-    Building.findById(req.query.id, (err, building) => {
-      if (err) {
-        res.send(err)
-      } else if (building === null) {
-        res.status(404).send()
-      } else {
-        res.json(building)
-      }
-    })
-  },
+  delete: async (req, res) => {
+    const query = Building.remove({ _id: req.query.id })
 
-  update: (req, res) => {
-    Building.findOneAndUpdate({ _id: req.query.id }, req.body, { new: true }, (err, building) => {
-      if (err) {
-        res.send(err)
-      }
-      res.json(building)
-    })
-  },
+    try {
+      const err = await query.exec()
 
-  delete: (req, _res) => {
-    Building.remove({ _id: req.query.id }, (err, res) => {
       if (err) {
-        res.send(err)
+        return res.json(err)
       }
+
       res.json({ message: 'Building successfully deleted' })
-    })
+    } catch (err) {
+      res.status(400).json(err)
+    }
+  },
+
+  deleteAll: async (req, res) => {
+    const query = Building.remove({ })
+
+    try {
+      const err = await query.exec()
+
+      if (err) {
+        return res.json(err)
+      }
+
+      res.json({ message: 'All buildings successfully deleted' })
+    } catch (err) {
+      res.status(400).json(err)
+    }
   }
 }

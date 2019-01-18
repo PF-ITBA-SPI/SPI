@@ -139,6 +139,19 @@
             "description": "Ok"
           }
         }
+      },
+      "delete": {
+        "x-swagger-router-controller": "buildings",
+        "operationId": "deleteAll",
+        "summary": "Delete all buildings",
+        "description": "",
+        "tags": ["/buildings"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Ok"
+          }
+        }
       }
     },
     "/buildings/{id}": {
@@ -148,7 +161,45 @@
         "summary": "Get building by id",
         "description": "",
         "tags": ["/buildings"],
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok"
+          }
+        }
+      },
+      "put": {
+        "x-swagger-router-controller": "buildings",
+        "operationId": "update",
+        "summary": "Update building information",
+        "description": "",
+        "tags": ["/buildings"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "payload",
+            "description": "Map payload",
+            "schema": {
+            }
+          },
+          {
+            "in": "query",
+            "name": "id",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Ok"
