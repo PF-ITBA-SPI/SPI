@@ -2,14 +2,16 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
+const Floor = require('./FloorSchema')
+
 const BuildingSchema = new Schema({
   name: {
     type: String,
     required: true,
   },
   floors: {
-    // Floor ids
-    type: [{ type: Schema.Types.ObjectId, ref: 'floor' }],
+    type: [Floor],
+    required: true,
     default: [],
   },
 })

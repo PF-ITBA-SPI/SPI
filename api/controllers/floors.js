@@ -1,7 +1,7 @@
 'use strict'
 
 const mongoose = require('mongoose')
-require('../models/Floor') // Register model
+require('../models/FloorSchema') // Register model
 const Floor = mongoose.model('Floor')
 const Building = mongoose.model('Building')
 
