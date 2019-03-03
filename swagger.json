@@ -246,10 +246,26 @@
           "items": {
             "$ref": "#/definitions/Floor"
           }
+        },
+        "defaultFloorId": {
+          "type": "string"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "zoom": {
+          "type": "number"
         }
       },
       "required": [
-        "name"
+        "name",
+        "floors",
+        "latitude",
+        "longitude",
+        "zoom"
       ]
     },
     "BuildingWithId": {
@@ -271,21 +287,49 @@
         "number": {
           "type": "number"
         },
+        "overlay": {
+          "$ref": "#/definitions/Overlay"
+        }
+      },
+      "required": [
+        "name",
+        "number",
+        "overlay"
+      ]
+    },
+    "Overlay": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
         "latitude": {
           "type": "number"
         },
         "longitude": {
           "type": "number"
         },
-        "zoom": {
+        "width": {
+          "type": "number"
+        },
+        "bearing": {
+          "type": "number"
+        },
+        "anchor_x": {
+          "type": "number"
+        },
+        "anchor_y": {
           "type": "number"
         }
       },
       "required": [
-        "name",
-        "number",
+        "url",
         "latitude",
-        "longitude"
+        "longitude",
+        "width",
+        "bearing",
+        "anchor_x",
+        "anchor_y"
       ]
     }
   },
