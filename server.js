@@ -43,7 +43,8 @@ const startServer = () => {
   const swaggerDocument = require('./swagger.json')
   const controllerMappings = {
     root: require('./api/controllers/root'),
-    maps: require('./api/controllers/maps')
+    buildings: require('./api/controllers/buildings'),
+    samples: require('./api/controllers/samples'),
   }
   swagger.setUpRoutes(controllerMappings, app, swaggerDocument)
 

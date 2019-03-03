@@ -38,25 +38,12 @@
         }
       }
     },
-    "/maps": {
-      "get": {
-        "x-swagger-router-controller": "maps",
-        "operationId": "list",
-        "summary": "Get all maps",
-        "description": "",
-        "tags": ["/maps"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Ok"
-          }
-        }
-      },
+    "/buildings": {
       "post": {
-        "x-swagger-router-controller": "maps",
+        "x-swagger-router-controller": "buildings",
         "operationId": "create",
-        "summary": "Add a new map",
-        "tags": ["/maps"],
+        "summary": "Create a new building",
+        "tags": ["/buildings"],
         "security": [
           {
             "ApiKey": []
@@ -68,15 +55,7 @@
             "name": "payload",
             "description": "Map payload",
             "schema": {
-              "type": "object",
-              "required": [
-                "name"
-              ],
-              "properties": {
-                "name": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/Building"
             }
           }
         ],
@@ -92,11 +71,401 @@
             }
           }
         }
+      },
+      "get": {
+        "x-swagger-router-controller": "buildings",
+        "operationId": "list",
+        "summary": "Get all buildings",
+        "description": "",
+        "tags": ["/buildings"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BuildingWithId"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "x-swagger-router-controller": "buildings",
+        "operationId": "deleteAll",
+        "summary": "Delete all buildings",
+        "description": "",
+        "tags": ["/buildings"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Ok"
+          }
+        }
+      }
+    },
+    "/buildings/{id}": {
+      "get": {
+        "x-swagger-router-controller": "buildings",
+        "operationId": "get",
+        "summary": "Get building by id",
+        "description": "",
+        "tags": ["/buildings/{id}"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/BuildingWithId"
+            }
+          }
+        }
+      },
+      "put": {
+        "x-swagger-router-controller": "buildings",
+        "operationId": "update",
+        "summary": "Update building information",
+        "description": "",
+        "tags": ["/buildings/{id}"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "payload",
+            "description": "Map payload",
+            "schema": {
+              "$ref": "#/definitions/Building"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/BuildingWithId"
+            }
+          }
+        }
+      }
+    },
+    "/buildings/{buildingId}/samples": {
+      "get": {
+        "x-swagger-router-controller": "samples",
+        "operationId": "list",
+        "summary": "Get samples of a building by building ID",
+        "description": "",
+        "tags": ["/buildings/{buildingId}/samples"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "buildingId",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Sample"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "x-swagger-router-controller": "samples",
+        "operationId": "create",
+        "summary": "Create a sample for a building",
+        "description": "",
+        "tags": ["/buildings/{buildingId}/samples"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "payload",
+            "description": "Sample payload",
+            "schema": {
+              "$ref": "#/definitions/Sample"
+            }
+          },
+          {
+            "in": "path",
+            "name": "buildingId",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/Sample"
+            }
+          }
+        }
+      },
+      "delete": {
+        "x-swagger-router-controller": "samples",
+        "operationId": "deleteAll",
+        "summary": "Delete all samples for a building",
+        "description": "",
+        "tags": ["/buildings/{buildingId}/samples"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "buildingId",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/Sample"
+            }
+          }
+        }
+      }
+    },
+    "/buildings/{buildingId}/samples/{sampleId}": {
+      "get": {
+        "x-swagger-router-controller": "samples",
+        "operationId": "get",
+        "summary": "Get a single sample by building and sample ID",
+        "description": "",
+        "tags": ["/buildings/{buildingId}/samples/{sampleId}"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "buildingId",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sampleId",
+            "description": "The sample's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/Sample"
+            }
+          }
+        }
+      },
+      "delete": {
+        "x-swagger-router-controller": "samples",
+        "operationId": "delete",
+        "summary": "Delete a single sample by ID",
+        "description": "",
+        "tags": ["/buildings/{buildingId}/samples/{sampleId}"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "buildingId",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sampleId",
+            "description": "The sample's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok"
+          }
+        }
       }
     }
   },
   "definitions": {
-
+    "id": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{24}$"
+        }
+      },
+      "required": [
+        "_id"
+      ]
+    },
+    "Building": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "floors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Floor"
+          }
+        },
+        "defaultFloorId": {
+          "type": "string"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "zoom": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "floors",
+        "latitude",
+        "longitude",
+        "zoom"
+      ]
+    },
+    "BuildingWithId": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/id"
+        },
+        {
+          "$ref": "#/definitions/Building"
+        }
+      ]
+    },
+    "Floor": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "number": {
+          "type": "number"
+        },
+        "overlay": {
+          "$ref": "#/definitions/Overlay"
+        }
+      },
+      "required": [
+        "name",
+        "number",
+        "overlay"
+      ]
+    },
+    "Overlay": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "bearing": {
+          "type": "number"
+        },
+        "anchor_x": {
+          "type": "number"
+        },
+        "anchor_y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url",
+        "latitude",
+        "longitude",
+        "width",
+        "bearing",
+        "anchor_x",
+        "anchor_y"
+      ]
+    },
+    "Sample": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "buildingId": {
+          "type": "string"
+        },
+        "floorId": {
+          "type": "string"
+        },
+        "fingerprint": {
+          "$ref": "#/definitions/Fingerprint"
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude",
+        "buildingId",
+        "floorId",
+        "fingerprint"
+      ]
+    },
+    "Fingerprint": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "example": {
+        "9823472984BFA5C": -35,
+        "BD4353453C3453A": -5
+      }
+    }
   },
   "securityDefinitions": {
     "ApiKey": {
