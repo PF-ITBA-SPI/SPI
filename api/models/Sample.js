@@ -22,7 +22,7 @@ const SampleSchema = new Schema({
     required: true
   },
   fingerprint: {
-    type: [Fingerprint],
+    type: Fingerprint,
     required: true
   }
 })
