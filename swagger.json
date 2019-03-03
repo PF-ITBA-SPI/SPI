@@ -114,7 +114,7 @@
         "tags": ["/buildings/{id}"],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "description": "The building's id",
             "schema": {
@@ -147,7 +147,7 @@
             }
           },
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "description": "The building's id",
             "schema": {

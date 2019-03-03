@@ -34,7 +34,7 @@ module.exports = {
   },
 
   get: async (req, res) => {
-    const query = Building.findById(req.query.id)
+    const query = Building.findById(req.params.id)
 
     query.lean()
 
@@ -52,7 +52,7 @@ module.exports = {
   },
 
   update: async (req, res) => {
-    const query = Building.findOneAndUpdate({ _id: req.query.id }, req.body, { new: true, lean: true })
+    const query = Building.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true, lean: true })
 
     try {
       const building = await query.exec()
@@ -68,7 +68,7 @@ module.exports = {
   },
 
   delete: async (req, res) => {
-    const query = Building.remove({ _id: req.query.id })
+    const query = Building.remove({ _id: req.params.id })
 
     try {
       const err = await query.exec()
