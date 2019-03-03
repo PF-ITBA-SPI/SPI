@@ -58,7 +58,7 @@ const startServer = () => {
 
   app.listen(port)
 
-  console.log(`spi-api started on port ${port}`)
+  console.log(`spi-api started on port http://localhost:${port}`)
 }
 
 /* *********************************************************************************************************************
