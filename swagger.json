@@ -164,6 +164,159 @@
           }
         }
       }
+    },
+    "/buildings/{buildingId}/samples": {
+      "get": {
+        "x-swagger-router-controller": "samples",
+        "operationId": "list",
+        "summary": "Get samples of a building by building ID",
+        "description": "",
+        "tags": ["/buildings/{buildingId}/samples"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "buildingId",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Sample"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "x-swagger-router-controller": "samples",
+        "operationId": "create",
+        "summary": "Create a sample for a building",
+        "description": "",
+        "tags": ["/buildings/{buildingId}/samples"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "payload",
+            "description": "Sample payload",
+            "schema": {
+              "$ref": "#/definitions/Sample"
+            }
+          },
+          {
+            "in": "path",
+            "name": "buildingId",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/Sample"
+            }
+          }
+        }
+      },
+      "delete": {
+        "x-swagger-router-controller": "samples",
+        "operationId": "deleteAll",
+        "summary": "Delete all samples for a building",
+        "description": "",
+        "tags": ["/buildings/{buildingId}/samples"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "buildingId",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/Sample"
+            }
+          }
+        }
+      }
+    },
+    "/buildings/{buildingId}/samples/{sampleId}": {
+      "get": {
+        "x-swagger-router-controller": "samples",
+        "operationId": "get",
+        "summary": "Get a single sample by building and sample ID",
+        "description": "",
+        "tags": ["/buildings/{buildingId}/samples/{sampleId}"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "buildingId",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sampleId",
+            "description": "The sample's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/Sample"
+            }
+          }
+        }
+      },
+      "delete": {
+        "x-swagger-router-controller": "samples",
+        "operationId": "delete",
+        "summary": "Delete a single sample by ID",
+        "description": "",
+        "tags": ["/buildings/{buildingId}/samples/{sampleId}"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "buildingId",
+            "description": "The building's id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sampleId",
+            "description": "The sample's id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok"
+          }
+        }
+      }
     }
   },
   "definitions": {
