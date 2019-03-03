@@ -1,6 +1,7 @@
 'use strict'
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const ObjectId = Schema.Types.ObjectId
 const Fingerprint = require('./FingerprintSchema')
 
 const SampleSchema = new Schema({
@@ -13,11 +14,11 @@ const SampleSchema = new Schema({
     required: true
   },
   buildingId: {
-    type: String,
+    type: ObjectId,
     required: true
   },
   floorId: {
-    type: String,
+    type: ObjectId,
     required: true
   },
   fingerprint: {
