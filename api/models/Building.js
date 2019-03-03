@@ -14,6 +14,13 @@ const BuildingSchema = new Schema({
     required: true,
     default: [],
   },
+  /**
+   * Default floor to be loaded when selecting building. If not present, use `floors[0]`.
+   */
+  defaultFloorId: {
+    type: Floor,
+    required: false,
+  }
 })
 
 module.exports = mongoose.model('Building', BuildingSchema)

@@ -52,9 +52,7 @@ module.exports = {
   },
 
   update: async (req, res) => {
-    const query = Building.findOneAndUpdate({ _id: req.query.id }, req.body, { new: true })
-
-    query.lean()
+    const query = Building.findOneAndUpdate({ _id: req.query.id }, req.body, { new: true, lean: true })
 
     try {
       const building = await query.exec()
