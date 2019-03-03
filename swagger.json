@@ -38,62 +38,6 @@
         }
       }
     },
-    "/maps": {
-      "get": {
-        "x-swagger-router-controller": "maps",
-        "operationId": "list",
-        "summary": "Get all maps",
-        "description": "",
-        "tags": ["/maps"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Ok"
-          }
-        }
-      },
-      "post": {
-        "x-swagger-router-controller": "maps",
-        "operationId": "create",
-        "summary": "Add a new map",
-        "tags": ["/maps"],
-        "security": [
-          {
-            "ApiKey": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "payload",
-            "description": "Map payload",
-            "schema": {
-              "type": "object",
-              "required": [
-                "name"
-              ],
-              "properties": {
-                "name": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad request",
-            "schema": {
-            },
-            "examples": {
-            }
-          }
-        }
-      }
-    },
     "/buildings": {
       "post": {
         "x-swagger-router-controller": "buildings",
@@ -331,6 +275,43 @@
         "anchor_x",
         "anchor_y"
       ]
+    },
+    "Sample": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "buildingId": {
+          "type": "string"
+        },
+        "floorId": {
+          "type": "string"
+        },
+        "fingerprint": {
+          "$ref": "#/definitions/Fingerprint"
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude",
+        "buildingId",
+        "floorId",
+        "fingerprint"
+      ]
+    },
+    "Fingerprint": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "example": {
+        "9823472984BFA5C": -35,
+        "BD4353453C3453A": -5
+      }
     }
   },
   "securityDefinitions": {
