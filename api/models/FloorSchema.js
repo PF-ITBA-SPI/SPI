@@ -1,5 +1,6 @@
 'use strict'
 const mongoose = require('mongoose')
+const Overlay = require('./OverlaySchema')
 
 const FloorSchema = new mongoose.Schema({
   // Displayed name. E.g: "1", "PB", "E", "-2"
@@ -12,19 +13,9 @@ const FloorSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  // Camera settings for the floor
-  latitude: {
-    type: Number,
+  overlay: {
+    type: Overlay,
     required: true
-  },
-  longitude: {
-    type: Number,
-    required: true
-  },
-  zoom: {
-    type: Number,
-    required: false,
-    default: 18
   },
 })
 

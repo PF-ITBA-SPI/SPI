@@ -18,9 +18,23 @@ const BuildingSchema = new Schema({
    * Default floor to be loaded when selecting building. If not present, use `floors[0]`.
    */
   defaultFloorId: {
-    type: Floor,
+    type: String,
     required: false,
-  }
+  },
+  // Camera settings when selecting the building
+  latitude: {
+    type: Number,
+    required: true
+  },
+  longitude: {
+    type: Number,
+    required: true
+  },
+  zoom: {
+    type: Number,
+    required: false,
+    default: 18
+  },
 })
 
 module.exports = mongoose.model('Building', BuildingSchema)

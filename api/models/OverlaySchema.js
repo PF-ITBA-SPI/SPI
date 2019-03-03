@@ -34,4 +34,4 @@ const OverlaySchema = new Schema({
   },
 })
 
-module.exports = mongoose.model('Overlay', OverlaySchema)
+module.exports = OverlaySchema
