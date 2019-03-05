@@ -17,7 +17,6 @@ module.exports = {
 
   list: async (req, res) => {
     const query = Building.find({})
-
     query.lean()
 
     try {
