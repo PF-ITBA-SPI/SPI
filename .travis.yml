@@ -1,9 +1,12 @@
 language: node_js
 node_js:
   - 10.9.0
+env:
+  # Use staging DB for tests
+  - MONGODB_URI=mongodb://heroku_34rpn0c0:et1e5u21vfr2g9um12nf7jb97p@ds121982.mlab.com:21982/heroku_34rpn0c0
 script:
   - "npm run lint"
-#  - "npm run test"
+  - "npm test"
 deploy:
   provider: heroku
   api_key:
