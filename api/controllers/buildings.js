@@ -9,7 +9,7 @@ module.exports = {
     const building = new Building(req.body)
     try {
       await building.save()
-      res.status(201).json({ message: 'Building successfully created' })
+      res.status(201).json(building)
     } catch (err) {
       res.status(400).json(err)
     }
