@@ -32,8 +32,8 @@ your local machine for development and testing purposes.
 those environment variables externally yourself, those take precedence
 over `.env`)
 1. Start the app:
-    - Development mode: `npm start`
-    - Production mode: `npm run prod`
+    - Development mode: `npm run start:dev`
+    - Production mode: `npm run start:prod`
 1. Browse the interactive documentation by visiting `/api-docs`
 
 ## Running the tests
