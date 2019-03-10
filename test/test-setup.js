@@ -1,7 +1,11 @@
-import { before } from 'mocha'
+const { before } = require('mocha')
 
 const mongoose = require('mongoose')
+const chai = require('chai')
 require('../api/util/load-config')
+
+// Load `should`
+before(() => chai.should())
 
 // Connect to test DB before all tests
 before(() => {

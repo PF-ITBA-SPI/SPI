@@ -1,4 +1,4 @@
-import { describe, before, after, it } from 'mocha'
+const { describe, before, after, it } = require('mocha')
 
 const chai = require('chai')
 const chaiHttp = require('chai-http')

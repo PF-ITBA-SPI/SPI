@@ -1,4 +1,4 @@
-import { describe, before, beforeEach, after, it } from 'mocha'
+const { describe, before, beforeEach, after, it } = require('mocha')
 
 const chai = require('chai')
 const chaiHttp = require('chai-http')
@@ -43,12 +43,14 @@ describe('Buildings', () => {
         .post('/buildings')
         .send({
           name: 'Test Building',
-          floors: []
+          floors: [],
+          latitude: 3,
+          longitude: 3,
+          zoom: 3,
         })
         .then((res) => {
-          res.should.have.status(200)
-          res.body.should.be.a('array')
-          res.body.length.should.be.eql(0)
+          res.should.have.status(201)
+          res.body.should.eql({ message: 'Building successfully created' })
           done()
         })
     })
