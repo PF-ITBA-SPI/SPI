@@ -9,7 +9,7 @@ module.exports = {
     const building = new Building(req.body)
     try {
       await building.save()
-      res.status(201).json({ message: 'Building successfully created' })
+      res.status(201).json(building)
     } catch (err) {
       res.status(400).json(err)
     }
@@ -17,7 +17,6 @@ module.exports = {
 
   list: async (req, res) => {
     const query = Building.find({})
-
     query.lean()
 
     try {
@@ -71,12 +70,7 @@ module.exports = {
     const query = Building.remove({ _id: req.params.id })
 
     try {
-      const err = await query.exec()
-
-      if (err) {
-        return res.json(err)
-      }
-
+      await query.exec()
       res.json({ message: 'Building successfully deleted' })
     } catch (err) {
       res.status(400).json(err)
@@ -87,12 +81,7 @@ module.exports = {
     const query = Building.remove({ })
 
     try {
-      const err = await query.exec()
-
-      if (err) {
-        return res.json(err)
-      }
-
+      await query.exec()
       res.json({ message: 'All buildings successfully deleted' })
     } catch (err) {
       res.status(400).json(err)

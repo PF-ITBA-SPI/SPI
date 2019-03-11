@@ -163,6 +163,28 @@
             }
           }
         }
+      },
+      "delete": {
+        "x-swagger-router-controller": "buildings",
+        "operationId": "delete",
+        "summary": "Delete a single building",
+        "description": "",
+        "tags": ["/buildings/{id}"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The building id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ok"
+          }
+        }
       }
     },
     "/buildings/{buildingId}/samples": {
