@@ -3,7 +3,7 @@ node_js:
   - 10.9.0
 env:
   # Use staging DB for tests
-  - MONGODB_URI=mongodb://heroku_34rpn0c0:et1e5u21vfr2g9um12nf7jb97p@ds121982.mlab.com:21982/heroku_34rpn0c0
+  secure: "yL4iHxAgh+1I3xoQfpBE4M/KDW+Et08dqefP2eH9aL/OZWDP5I6R2Zm70oaM6bDQRMpq6mN7+5hDQ/KqH9t7PSS6jkTOgk8sZXpiE19ng3XVbRXxGw6dlVaNBgM/4oy/zXsiK9tuNdG4JpbKMJg/jxbq/QglFjmh8LAQ2d9CQHP/oPQilGwfBLITmqc9pvFRpHFNpu3ZM6YY87nwCPFr8+4BOsqKWSBSu6PE7uGnaZpXZk+oYxlOHUZYJPrfrNU1g2nx3LQw5jpMSI451LtZvTUpCZM/mjAZu3YuO3aKMhXMeTEwUX1Ew8SAdacOLi1//TVcXBwOtCA5LkIKG+5UuQCKqMuh6T0MswHPxJdzDEFwlfdGivzhJhWrulbLM+C1wqwmxsH1KN3tbu0eDnviirp4MIahz9p8iy9NRD9VrkLVJrKm0+o9mdUj7hIV3sKT1qYaUVTvnUA28o1j+SHdcigCA3KI2y9hesoMfrXGkLTfkfVwzJLwKmB5sH0XU9QBLhYpoKFWaCJGjICPjYfKfSuPn7aNXyiAllDRyT+c5qWQojqSFlUQMLr2aQVl9ceNOiGqHuXgM/k0StFmWbhuSSke7o0S5D9sseyXVoROwc4oPz0+aBAGAIx0/X47BjLLDtRXngWP2yY3Pz+Sz0SGfEZT/ZAcHyNuunlNJMG7CQM="
 script:
   - "npm run lint"
   - "npm test"
