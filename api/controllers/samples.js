@@ -10,14 +10,14 @@ module.exports = {
     const sample = new Sample(params)
     try {
       await sample.save()
-      res.status(201).json({ message: 'Sample successfully created' })
+      res.status(201).json(sample)
     } catch (err) {
       res.status(400).json(err)
     }
   },
 
   list: async (req, res) => {
-    const query = Sample.find({ buildingID: req.params.buildingId })
+    const query = Sample.find({ buildingId: req.params.buildingId })
 
     query.lean()
 
@@ -35,7 +35,7 @@ module.exports = {
   },
 
   get: async (req, res) => {
-    const query = Sample.findById(req.params.id)
+    const query = Sample.findById(req.params.sampleId)
 
     query.lean()
 
@@ -53,15 +53,9 @@ module.exports = {
   },
 
   delete: async (req, res) => {
-    const query = Sample.remove({ _id: req.params.id })
-
+    const query = Sample.remove({ _id: req.params.sampleId })
     try {
-      const err = await query.exec()
-
-      if (err) {
-        return res.json(err)
-      }
-
+      await query.exec()
       res.json({ message: 'Sample successfully deleted' })
     } catch (err) {
       res.status(400).json(err)
@@ -69,15 +63,9 @@ module.exports = {
   },
 
   deleteAll: async (req, res) => {
-    const query = Sample.remove({ buildingID: req.params.buildingId })
-
+    const query = Sample.remove({ buildingId: req.params.buildingId })
     try {
-      const err = await query.exec()
-
-      if (err) {
-        return res.json(err)
-      }
-
+      await query.exec()
       res.json({ message: `All samples for building ${req.params.buildingId} successfully deleted` })
     } catch (err) {
       res.status(400).json(err)

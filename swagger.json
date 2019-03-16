@@ -473,7 +473,6 @@
       "required": [
         "latitude",
         "longitude",
-        "buildingId",
         "floorId",
         "fingerprint"
       ]
