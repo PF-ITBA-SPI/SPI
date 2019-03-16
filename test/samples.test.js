@@ -88,6 +88,8 @@ describe('Samples', function () {
         const res = await requester.get(`/buildings/${building._id}/samples/${sample._id}`)
         res.should.have.status(200)
         res.body.should.eql(sample)
+        res.body.should.have.property('buildingId')
+        res.body.buildingId.should.eql(building._id)
       })
     })
 
