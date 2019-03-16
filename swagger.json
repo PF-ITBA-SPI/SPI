@@ -467,7 +467,14 @@
           "type": "string"
         },
         "fingerprint": {
-          "$ref": "#/definitions/Fingerprint"
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "example": {
+            "9823472984BFA5C": -35,
+            "BD4353453C3453A": -5
+          }
         }
       },
       "required": [
@@ -476,16 +483,6 @@
         "floorId",
         "fingerprint"
       ]
-    },
-    "Fingerprint": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "number"
-      },
-      "example": {
-        "9823472984BFA5C": -35,
-        "BD4353453C3453A": -5
-      }
     }
   },
   "securityDefinitions": {
