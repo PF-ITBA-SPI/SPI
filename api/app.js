@@ -18,7 +18,7 @@ const jwt = require('./middlewares/jwt')
 const app = express()
 app.use(cors())
 app.use(bodyParser.json())
-app.use(jwt.verifier)
+app.use(process.env.NODE_ENV === 'production' ? jwt.verifier : jwt.mockVerifier)
 
 // Set permissions guard and error handler for unauthorized endpoints
 const guard = require('express-jwt-permissions')()

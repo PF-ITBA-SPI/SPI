@@ -1,6 +1,41 @@
 const jwt = require('jsonwebtoken')
 
 /**
+ * Mock JWT verifier, used in non-production environments.  Starts with all privileges.  If JWT header is sent, permissions
+ * are set to that which is specified in the token, as follows:
+ * <ul>
+ *   <li>'user' = ['user']</li>
+ *   <li>'admin' = ['user', 'admin']</li>
+ *   <li>any other = []</li>
+ * </ul>
+ *
+ * @param req Express request
+ * @param res Express response
+ * @param next Next Express middleware
+ */
+function mockVerifier (req, res, next) {
+  // Start as admin
+  req.user = { permissions: ['user', 'admin'] }
+
+  const tokenHeader = req.get('Authorization')
+  if (tokenHeader && /^Bearer .+/.test(tokenHeader)) {
+    const token = tokenHeader.split('Bearer ')[1]
+    switch (token) {
+      case 'user':
+        req.user.permissions = ['user']
+        break
+      case 'admin':
+        req.user.permissions = ['user', 'admin']
+        break
+      default:
+        req.user.permissions = []
+        break
+    }
+  }
+  next()
+}
+
+/**
  * JWT verifier. Reads the HTTP `Authorization: Bearer <TOKEN>` header, if present, and attempts to decode the token
  * with one of the configured public keys configured. Sets `req.user.permissions` as an array of permissions granted to
  * this request (empty array if unauthenticated).
@@ -68,5 +103,6 @@ function errorHandler (err, req, res, _next) {
 
 module.exports = {
   verifier,
+  mockVerifier,
   errorHandler
 }
