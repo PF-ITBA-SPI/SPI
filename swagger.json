@@ -7,6 +7,11 @@
   },
   "consumes": ["application/json"],
   "produces": ["application/json"],
+  "security": [
+    {
+      "ApiKey": []
+    }
+  ],
   "paths": {
     "/": {
       "get": {
@@ -44,11 +49,6 @@
         "operationId": "create",
         "summary": "Create a new building",
         "tags": ["/buildings"],
-        "security": [
-          {
-            "ApiKey": []
-          }
-        ],
         "parameters": [
           {
             "in": "body",
@@ -489,7 +489,7 @@
     "ApiKey": {
       "type": "apiKey",
       "in": "header",
-      "name": "X-API-Key"
+      "name": "Authorization"
     }
   }
 }

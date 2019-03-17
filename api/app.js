@@ -12,11 +12,22 @@ console.log('App started in', process.env.NODE_ENV, 'mode')
 const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
+const jwt = require('./middlewares/jwt')
 
 // Set up express app and middlewares
 const app = express()
 app.use(cors())
 app.use(bodyParser.json())
+app.use(jwt.verifier)
+
+// Set permissions guard and error handler for unauthorized endpoints
+const guard = require('express-jwt-permissions')()
+const PUBLIC_ENDPOINTS = ['/', '/ping', /^\/api-docs/] // api-docs is a regex because it also serves some other files CSS, etc. so it's not an exact match, unlike / and /ping
+app.get('/*', guard.check('user').unless({ path: PUBLIC_ENDPOINTS }))
+app.post('/*', guard.check('admin'))
+app.put('/*', guard.check('admin'))
+app.delete('/*', guard.check('admin'))
+app.use(jwt.errorHandler)
 
 // Map API endpoint routes from documentation to code
 console.debug('Mapping routes from API spec...')
