@@ -7,6 +7,11 @@
   },
   "consumes": ["application/json"],
   "produces": ["application/json"],
+  "security": [
+    {
+      "ApiKey": []
+    }
+  ],
   "paths": {
     "/": {
       "get": {
@@ -18,7 +23,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Ok"
+            "$ref": "#/responses/200"
           }
         }
       }
@@ -33,7 +38,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Ok"
+            "$ref": "#/responses/200"
           }
         }
       }
@@ -44,11 +49,6 @@
         "operationId": "create",
         "summary": "Create a new building",
         "tags": ["/buildings"],
-        "security": [
-          {
-            "ApiKey": []
-          }
-        ],
         "parameters": [
           {
             "in": "body",
@@ -60,15 +60,14 @@
           }
         ],
         "responses": {
-          "201": {
-            "description": "Created"
+          "200": {
+            "$ref": "#/responses/200"
           },
           "400": {
-            "description": "Bad request",
-            "schema": {
-            },
-            "examples": {
-            }
+            "$ref": "#/responses/400"
+          },
+          "403": {
+            "$ref": "#/responses/403"
           }
         }
       },
@@ -81,13 +80,19 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Ok",
+            "$ref": "#/responses/200",
             "schema": {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/BuildingWithId"
               }
             }
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
           }
         }
       },
@@ -100,7 +105,13 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Ok"
+            "$ref": "#/responses/200"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
           }
         }
       }
@@ -124,10 +135,16 @@
         ],
         "responses": {
           "200": {
-            "description": "Ok",
+            "$ref": "#/responses/200",
             "schema": {
               "$ref": "#/definitions/BuildingWithId"
             }
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
           }
         }
       },
@@ -157,10 +174,19 @@
         ],
         "responses": {
           "200": {
-            "description": "Ok",
+            "$ref": "#/responses/200",
             "schema": {
               "$ref": "#/definitions/BuildingWithId"
             }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
           }
         }
       },
@@ -182,7 +208,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Ok"
+            "$ref": "#/responses/200"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
           }
         }
       }
@@ -206,13 +238,19 @@
         ],
         "responses": {
           "200": {
-            "description": "Ok",
+            "$ref": "#/responses/200",
             "schema": {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/Sample"
               }
             }
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
           }
         }
       },
@@ -242,10 +280,19 @@
         ],
         "responses": {
           "200": {
-            "description": "Ok",
+            "$ref": "#/responses/200",
             "schema": {
               "$ref": "#/definitions/Sample"
             }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
           }
         }
       },
@@ -267,10 +314,16 @@
         ],
         "responses": {
           "200": {
-            "description": "Ok",
+            "$ref": "#/responses/200",
             "schema": {
               "$ref": "#/definitions/Sample"
             }
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
           }
         }
       }
@@ -302,10 +355,16 @@
         ],
         "responses": {
           "200": {
-            "description": "Ok",
+            "$ref": "#/responses/200",
             "schema": {
               "$ref": "#/definitions/Sample"
             }
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
           }
         }
       },
@@ -335,10 +394,33 @@
         ],
         "responses": {
           "200": {
-            "description": "Ok"
+            "$ref": "#/responses/200"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
           }
         }
       }
+    }
+  },
+  "responses": {
+    "200": {
+      "description": "OK"
+    },
+    "201": {
+      "description": "Object created"
+    },
+    "400": {
+      "description": "Bad request"
+    },
+    "403": {
+      "description": "JWT is missing or invalid"
+    },
+    "404": {
+      "description": "ID(s) not found"
     }
   },
   "definitions": {
@@ -489,7 +571,7 @@
     "ApiKey": {
       "type": "apiKey",
       "in": "header",
-      "name": "X-API-Key"
+      "name": "Authorization"
     }
   }
 }
