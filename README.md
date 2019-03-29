@@ -87,39 +87,53 @@ only succeed for the matching public key, if any. This way, the API can:
 and checks whether the user  has permission to access the requested endpoint
 
 ### Auth Setup
-1. Generate an RSA keypair with `ssh-keygen`. You will get a private key
-(no extension) and a public key (`.pub` extension).
+Do the following **twice**, so each app has its own keypair:
+
+1. Generate keypair - run the following in `bash`:
+    ```bash
+    # Remove existing keypair, if any
+    rm -f pf_itba_spi pf_itba_spi.pub
+    # Generate RSA keypair with no passphrase
+    ssh-keygen -t rsa -N "" -f pf_itba_spi
+    # Change permissions just to be sure
+    chmod 600 pf_itba_spi
+    # Change public key to PEM format
+    ssh-keygen -f pf_itba_spi -m pem -e > pf_itba_spi.pub
+    ```
+    You will get a private key (`pf_itba_spi`) and a public key (`pf_itba_spi.pub`).
 1. Process the private key
-    1. Convert the key to PKCS8 format: `ssh-keygen -f PRIV_KEY_PATH -m "PKCS8" -e > FORMATTED_PRIV_KEY_PATH`
-    1. Copy the formatted private key to the app's `secret.properties` file, under the `api_private_key` property.
-    Escape each newline with `\`, for example:
+    1. Escape each newline with `\`, for example:
         ```text
-        api_private_key=-----BEGIN RSA PRIVATE KEY-----\
+        -----BEGIN RSA PRIVATE KEY-----\
         line1\
         line2\
         ...
         line x\
         -----END RSA PRIVATE KEY-----
         ```
-1. Process the public key
-    1. Convert the public key to PEM format: `ssh-keygen -f PUBLIC_KEY_PATH -m "PEM" -e > OUTPUT_FILE`
-    1. Replace all newlines with `\n`, so that everything is in one line. For example:
+    1. Copy the formatted private key to the app's `secret.properties` file,
+    under the `api_private_key` property. The final result should look like this:
         ```text
-        -----BEGIN RSA PUBLIC KEY-----
-        line1
-        line2
         ...
-        -----END RSA PUBLIC KEY-----
+        api_private_key=-----BEGIN RSA PRIVATE KEY-----\
+        line1\
+        line2\
+        ...
+        line x\
+        -----END RSA PRIVATE KEY-----
+        ...
         ```
-        becomes
+1. Process the public key
+    1. Replace all newlines with the literal `\n`, so that everything is in one line,
+    and also surround the key in quotes. For example:
         ```text
-        -----BEGIN RSA PUBLIC KEY-----\nline1\nline2\n...\n-----END RSA PUBLIC KEY-----
+        "-----BEGIN RSA PUBLIC KEY-----\nline1\nline2\n...\n-----END RSA PUBLIC KEY-----"
         ```
-    3. Copy the result into the `.env` file for your environment, under either
+    1. Copy the result into the `.env` file for your environment, under either
     the `USER_PUBLIC_KEY` or `ADMIN_PUBLIC_KEY` key as appropriate (see
     [Environment Setup](#environment-setup) for more details about .env files).
     **The key must be surrounded in double quotes!**
-    3. Final result in your `.env` file:
+    1. Final result in your `.env` file:
         ```text
         ...
         USER_PUBLIC_KEY="-----BEGIN RSA PUBLIC KEY-----\nline1\nline2\n...\n-----END RSA PUBLIC KEY-----"
