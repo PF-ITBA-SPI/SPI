@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const childProcess = require('child_process')
 
-function generateKeypair(appName) {
+function generateKeypair (appName) {
   const PRIV_KEY_PATH = path.join(os.tmpdir(), appName)
   const PUB_KEY_PATH = `${PRIV_KEY_PATH}.pub`
   const commands = [

@@ -87,11 +87,13 @@ only succeed for the matching public key, if any. This way, the API can:
 and checks whether the user  has permission to access the requested endpoint
 
 ### Auth Setup
-1. Generate an RSA keypair with `ssh-keygen`. You will get a private key
-(no extension) and a public key (`.pub` extension).
-1. Copy the private key to the app's `secret.properties` file. See the app's
-README for details about this.
-1. Convert the public key to PEM format (the private key is already in PEM format):
+Generate an RSA keypair with `ssh-keygen -t rsa`. You will get a private
+key (no extension) and a public key (`.pub` extension). Each key needs
+to be treated differently, as follows:
+
+### Public Keys (API)
+
+1. Convert the public key to PEM format:
 `ssh-keygen -f PUBLIC_KEY_PATH -m "PEM" -e > OUTPUT_FILE`. If you want
 to output to stdout, leave out the redirection (`> OUTPUT_FILE`), but
 file output is recommended for the next step
@@ -118,6 +120,11 @@ USER_PUBLIC_KEY="-----BEGIN RSA PUBLIC KEY-----\nline1\nline2\n...\n-----END RSA
 ADMIN_PUBLIC_KEY="-----BEGIN RSA PUBLIC KEY-----\nline1\nline2\n...\n-----END RSA PUBLIC KEY-----"
 ...
 ```
+
+### Private Keys (Apps)
+(the private key is already in PEM format)
+1. Copy the private key to the app's `secret.properties` file. See the app's
+README for details about this.
 
 ## Deployment
 

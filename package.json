@@ -9,7 +9,8 @@
     "start:dev": "cross-env NODE_ENV=development nodemon api/server.js",
     "start:prod": "cross-env NODE_ENV=production node api/server.js",
     "lint": "eslint .",
-    "test": "cross-env NODE_ENV=test mocha --exit test/test-setup.js test/**/*.test.js"
+    "test": "cross-env NODE_ENV=test mocha --exit test/test-setup.js test/**/*.test.js",
+    "genKeys": "node util/generateKeys.js"
   },
   "pre-commit": [
     "lint"
