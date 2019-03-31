@@ -14,7 +14,9 @@
         "operationId": "root",
         "summary": "Root endpoint",
         "description": "Echoes app name",
-        "tags": ["/"],
+        "tags": [
+          "/"
+        ],
         "parameters": [],
         "responses": {
           "200": {
@@ -29,7 +31,9 @@
         "operationId": "ping",
         "summary": "Ping endpoint",
         "description": "Responds with 'pong'",
-        "tags": ["/"],
+        "tags": [
+          "/"
+        ],
         "parameters": [],
         "responses": {
           "200": {
@@ -43,7 +47,9 @@
         "x-swagger-router-controller": "buildings",
         "operationId": "create",
         "summary": "Create a new building",
-        "tags": ["/buildings"],
+        "tags": [
+          "/buildings"
+        ],
         "security": [
           {
             "ApiKey": []
@@ -77,7 +83,9 @@
         "operationId": "list",
         "summary": "Get all buildings",
         "description": "",
-        "tags": ["/buildings"],
+        "tags": [
+          "/buildings"
+        ],
         "parameters": [],
         "responses": {
           "200": {
@@ -96,7 +104,9 @@
         "operationId": "deleteAll",
         "summary": "Delete all buildings",
         "description": "",
-        "tags": ["/buildings"],
+        "tags": [
+          "/buildings"
+        ],
         "parameters": [],
         "responses": {
           "200": {
@@ -111,7 +121,9 @@
         "operationId": "get",
         "summary": "Get building by id",
         "description": "",
-        "tags": ["/buildings/{id}"],
+        "tags": [
+          "/buildings/{id}"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -136,7 +148,9 @@
         "operationId": "update",
         "summary": "Update building information",
         "description": "",
-        "tags": ["/buildings/{id}"],
+        "tags": [
+          "/buildings/{id}"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -169,7 +183,9 @@
         "operationId": "delete",
         "summary": "Delete a single building",
         "description": "",
-        "tags": ["/buildings/{id}"],
+        "tags": [
+          "/buildings/{id}"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -193,7 +209,9 @@
         "operationId": "list",
         "summary": "Get samples of a building by building ID",
         "description": "",
-        "tags": ["/buildings/{buildingId}/samples"],
+        "tags": [
+          "/buildings/{buildingId}/samples"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -221,7 +239,9 @@
         "operationId": "create",
         "summary": "Create a sample for a building",
         "description": "",
-        "tags": ["/buildings/{buildingId}/samples"],
+        "tags": [
+          "/buildings/{buildingId}/samples"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -254,7 +274,9 @@
         "operationId": "deleteAll",
         "summary": "Delete all samples for a building",
         "description": "",
-        "tags": ["/buildings/{buildingId}/samples"],
+        "tags": [
+          "/buildings/{buildingId}/samples"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -281,7 +303,9 @@
         "operationId": "get",
         "summary": "Get a single sample by building and sample ID",
         "description": "",
-        "tags": ["/buildings/{buildingId}/samples/{sampleId}"],
+        "tags": [
+          "/buildings/{buildingId}/samples/{sampleId}"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -314,7 +338,9 @@
         "operationId": "delete",
         "summary": "Delete a single sample by ID",
         "description": "",
-        "tags": ["/buildings/{buildingId}/samples/{sampleId}"],
+        "tags": [
+          "/buildings/{buildingId}/samples/{sampleId}"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -336,6 +362,43 @@
         "responses": {
           "200": {
             "description": "Ok"
+          }
+        }
+      }
+    },
+    "/locations": {
+      "post": {
+        "x-swagger-router-controller": "locations",
+        "operationId": "getLocations",
+        "summary": "Gets the location of the user given a fingerprint and a building Id",
+        "tags": [
+          "/locations"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "fingerprint",
+            "description": "Location body with fingerprint and id",
+            "schema": {
+              "$ref": "#/definitions/FingerprintWithId"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+            },
+            "examples": {
+            }
           }
         }
       }
@@ -467,14 +530,7 @@
           "type": "string"
         },
         "fingerprint": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "number"
-          },
-          "example": {
-            "9823472984BFA5C": -35,
-            "BD4353453C3453A": -5
-          }
+          "$ref": "#/definitions/Fingerprint"
         }
       },
       "required": [
@@ -483,6 +539,27 @@
         "floorId",
         "fingerprint"
       ]
+    },
+    "FingerprintWithId": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/id"
+        },
+        {
+          "$ref": "#/definitions/Fingerprint"
+        }
+      ]
+    },
+    "Fingerprint":
+    {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "example": {
+        "9823472984BFA5C": -35,
+        "BD4353453C3453A": -5
+      }
     }
   },
   "securityDefinitions": {
