@@ -5,11 +5,13 @@ require('../models/Sample') // Register model
 const Sample = mongoose.model('Sample')
 
 const DEFAULT_RSSI = 0
-const k1 = 10
+const K1 = 10
+const K2 = 10
 
 module.exports = {
   getLocations: async (req, res) => {
-    const query = Sample.find({ buildingId: req.body._id })
+    const buildingId = req.body._id
+    const query = Sample.find({ buildingId: buildingId })
     query.lean()
 
     try {
@@ -56,17 +58,52 @@ module.exports = {
       // Take the k1 samples in R’’ that are the most similar to fp0. (The ones with the smaller similarity, TODO check this)
 
       R2.sort((sample1, sample2) => sample1.similarity - sample2.similarity)
-      const mostSimilarSamples = R2.slice(0, k1)
+      var mostSimilarSamples = R2.slice(0, K1)
 
       // Step 6:
       // Count the number of samples, from within the k1, associated to each floor, and set f to the most frequent floor (majority rule).
       var mostFrequentFloor = getMostFrequentFloor(mostSimilarSamples)
 
-      res.json(mostFrequentFloor)
+      // Calculate the position:
+
+      // Step 1:
+      // Build R’’’, a subset of R’’ (from the floor estimation procedure), with all the samples where the floor is f.
+
+      var R3 = []
+      R2.each((sample) => {
+        if (samples.floorId === mostFrequentFloor) R3.push(sample)
+      })
+
+      // Step 2:
+      // Compute the similarity, S(), between fp0 and all then fingerprints in R’’’.
+      // But this was already done in floor step 4
+
+      // Step 3:
+      // Take the k2 samples in R’’’ that are the most similar to fp0.
+      // The sorting is also already done in step 5 of floor selection TODO check if this is useless
+      R3.sort((sample1, sample2) => sample1.similarity - sample2.similarity)
+      mostSimilarSamples = R3.slice(0, K2)
+
+      // Step 4:
+      // Compute the estimated coordinates as the centroid of the k2 samples.
+      var position = getCentroid(mostSimilarSamples)
+      position.floorId = mostFrequentFloor
+      position.buildingId = buildingId
+      res.json(position)
     } catch (err) {
       res.status(400).json(err)
     }
   }
+}
+
+function getCentroid (samples) {
+  var latitudeSum = 0
+  var longitudeSum = 0
+  samples.each((sample) => {
+    latitudeSum += sample.latitude
+    longitudeSum += sample.longitude
+  })
+  return { latitude: latitudeSum / samples.length, longitude: longitudeSum / samples.length }
 }
 
 function sortSSIDs (fingerprint) {
