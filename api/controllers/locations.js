@@ -22,14 +22,10 @@ module.exports = {
       }
 
       // Do algorithm
-      const mainFingerprint = req.body.fingerprint
-      const mainFingerprintSortedSSIDs = sortSSIDs(mainFingerprint)
+      const mainFingerprintSortedSSIDs = sortSSIDs(req.body.fingerprint)
       samples.forEach((sample) => {
-        var ids = sortSSIDs(sample.fingerprint)
-        ids.sort((sample1, sample2) => mainFingerprint[sample1] - mainFingerprint[sample2])
-        sample.sortedIds = ids
+        sample.sortedIds = sortSSIDs(sample.fingerprint)
       })
-      const strongestSSIDs = [mainFingerprintSortedSSIDs[0], mainFingerprintSortedSSIDs[1], mainFingerprintSortedSSIDs[2]]
 
       // Calculate the floor:
 
@@ -38,12 +34,13 @@ module.exports = {
 
       // Strep 2:
       // Build R’’, a subset of R’, with all the samples where the strongest AP is equal to AP0, AP1 or AP2
+      const strongestSSIDs = mainFingerprintSortedSSIDs.slice(0, 3)
       var R2 = []
       samples.each((sample) => {
         if (samples.sortedIds[0] in strongestSSIDs) R2.push(sample)
       })
 
-      // Step 3: TODO we are not doing this so we take it ass if #(R'') is always big enough
+      // Step 3: TODO we are not doing this so we take it as if #(R'') is always big enough
       // If #(R’’) < n, then R’’ = R’, where #(.) denotes the cardinality of a set, and n is a parameter.
 
       // Step 4:
@@ -51,7 +48,7 @@ module.exports = {
       // The similarity function S() is the Manhattan distance
 
       R2.each((sample) => {
-        sample.similarity = manhattanDistance(sample.fingerprint, mainFingerprintSortedSSIDs)
+        sample.similarity = manhattanDistance(sample.fingerprint, req.body.fingerprint)
       })
 
       // Step 5:
@@ -108,7 +105,7 @@ function getCentroid (samples) {
 
 function sortSSIDs (fingerprint) {
   var ids = Object.keys(fingerprint)
-  ids.sort((a, b) => fingerprint[a] - fingerprint[b])
+  ids.sort((SSID1, SSID2) => fingerprint[SSID1] - fingerprint[SSID2])
   return ids
 }
 
@@ -122,12 +119,12 @@ function getMostFrequentFloor (samples) { // TODO this can be done in a more eff
 function manhattanDistance (fingerprint1, fingerprint2) {
   var keysUnion = new Set([...Object.keys(fingerprint1), ...Object.keys(fingerprint2)])
   var unionSize = keysUnion.length
-  var intersectionSize = fingerprint1.length + fingerprint2.length - keysUnion.length
+  var intersectionSize = Object.keys(fingerprint1).length + Object.keys(fingerprint2).length - keysUnion.length
   var sumatorial = 0
   keysUnion.each((key) => {
     var RSSI1 = fingerprint1[key] || DEFAULT_RSSI // Check what happens if default RSSI is not 0 and if there are RSSI with 0 value
     var RSSI2 = fingerprint2[key] || DEFAULT_RSSI
     sumatorial += Math.abs(RSSI1 - RSSI2)
   })
-  return 1 / unionSize * sumatorial - 2 * intersectionSize
+  return sumatorial / unionSize - 2 * intersectionSize
 }
