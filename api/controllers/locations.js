@@ -37,7 +37,7 @@ module.exports = {
       const strongestSSIDs = mainFingerprintSortedSSIDs.slice(0, 3)
       var R2 = []
       samples.forEach((sample) => {
-        if (samples.sortedIds[0] in strongestSSIDs) R2.push(sample)
+        if (strongestSSIDs.includes(sample.sortedIds[0])) R2.push(sample)
       })
 
       // Step 3: TODO we are not doing this so we take it as if #(R'') is always big enough
@@ -68,7 +68,7 @@ module.exports = {
 
       var R3 = []
       R2.forEach((sample) => {
-        if (samples.floorId === mostFrequentFloor) R3.push(sample)
+        if (sample.floorId.equals(mostFrequentFloor)) R3.push(sample)
       })
 
       // Step 2:
