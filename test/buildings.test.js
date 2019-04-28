@@ -108,7 +108,7 @@ describe('Buildings', function () {
       building = await createBuilding()
     })
 
-    it('modifies a building', async function () {
+    it('modifies a building', function (done) {
       const newBuilding = Object.assign({}, building, { name: 'Sarasa' })
       requester
         .put(`/buildings/${building._id}`)
@@ -118,6 +118,7 @@ describe('Buildings', function () {
           const returnedBuilding = res.body
           returnedBuilding.should.deep.eql(newBuilding) // ID shouldn't change since we send ID
           returnedBuilding._id.should.be.a('string')
+          done()
         })
     })
   })
