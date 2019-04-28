@@ -431,13 +431,13 @@
         }
       }
     },
-    "/locations": {
+    "/location": {
       "post": {
-        "x-swagger-router-controller": "locations",
-        "operationId": "getLocations",
+        "x-swagger-router-controller": "location",
+        "operationId": "getLocation",
         "summary": "Gets the location of the user given a fingerprint and a building Id",
         "tags": [
-          "/locations"
+          "/location"
         ],
         "security": [
           {

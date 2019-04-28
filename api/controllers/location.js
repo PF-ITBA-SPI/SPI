@@ -9,7 +9,7 @@ const K1 = 10
 const K2 = 10
 
 module.exports = {
-  getLocations: async (req, res) => {
+  getLocation: async (req, res) => {
     const buildingId = req.body._id
     const query = Sample.find({ buildingId: buildingId })
     query.lean()

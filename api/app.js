@@ -37,7 +37,7 @@ const controllerMappings = {
   root: require('./controllers/root'),
   buildings: require('./controllers/buildings'),
   samples: require('./controllers/samples'),
-  locations: require('./controllers/locations')
+  location: require('./controllers/location')
 }
 swagger.setUpRoutes(controllerMappings, app, swaggerDocument)
 
