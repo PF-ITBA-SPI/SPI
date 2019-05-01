@@ -18,13 +18,13 @@ module.exports = {
       const samples = await query.exec()
 
       if (samples === null) {
-        return res.status(404).json({})
+        return res.status(404)
       }
 
       // Do algorithm
-      const mainFingerprintSortedSSIDs = sortSSIDs(req.body.fingerprint)
-      samples.forEach((sample) => {
-        sample.sortedIds = sortSSIDs(sample.fingerprint)
+      const mainFingerprintSortedSSIDs = sortSSIDsByRSSI(req.body.fingerprint)
+      samples.forEach(sample => {
+        sample.sortedIds = sortSSIDsByRSSI(sample.fingerprint)
       })
 
       // Calculate the floor:
@@ -36,7 +36,7 @@ module.exports = {
       // Build R’’, a subset of R’, with all the samples where the strongest AP is equal to AP0, AP1 or AP2
       const strongestSSIDs = mainFingerprintSortedSSIDs.slice(0, 3)
       var R2 = []
-      samples.forEach((sample) => {
+      samples.forEach(sample => {
         if (strongestSSIDs.includes(sample.sortedIds[0])) R2.push(sample)
       })
 
@@ -47,7 +47,7 @@ module.exports = {
       // Compute the similarity, S(), between the fingerprint given and all the fingerprints in R’’.
       // The similarity function S() is the Manhattan distance
 
-      R2.forEach((sample) => {
+      R2.forEach(sample => {
         sample.similarity = manhattanDistance(sample.fingerprint, req.body.fingerprint)
       })
 
@@ -66,10 +66,7 @@ module.exports = {
       // Step 1:
       // Build R’’’, a subset of R’’ (from the floor estimation procedure), with all the samples where the floor is f.
 
-      var R3 = []
-      R2.forEach((sample) => {
-        if (sample.floorId.equals(mostFrequentFloor)) R3.push(sample)
-      })
+      let R3 = R2.filter(sample => sample.floorId.equals(mostFrequentFloor))
 
       // Step 2:
       // Compute the similarity, S(), between fp0 and all then fingerprints in R’’’.
@@ -96,17 +93,18 @@ module.exports = {
 function getCentroid (samples) {
   var latitudeSum = 0
   var longitudeSum = 0
-  samples.forEach((sample) => {
+  samples.forEach(sample => {
     latitudeSum += sample.latitude
     longitudeSum += sample.longitude
   })
   return { latitude: latitudeSum / samples.length, longitude: longitudeSum / samples.length }
 }
 
-function sortSSIDs (fingerprint) {
-  var ids = Object.keys(fingerprint)
-  ids.sort((SSID1, SSID2) => fingerprint[SSID1] - fingerprint[SSID2])
-  return ids.reverse()
+/*
+  Return the SSIDs of the fingerprint sorted by their RSSI value in the fingerprint, by biggest to smallest
+ */
+function sortSSIDsByRSSI (fingerprint) {
+  return Object.keys(fingerprint).sort((SSID1, SSID2) => fingerprint[SSID2] - fingerprint[SSID1])
 }
 
 function getMostFrequentFloor (samples) { // TODO this can be done in a more efficient way
@@ -132,7 +130,7 @@ function manhattanDistance (fingerprint1, fingerprint2) {
   var unionSize = keysUnion.length
   var intersectionSize = Object.keys(fingerprint1).length + Object.keys(fingerprint2).length - keysUnion.length
   var sumatorial = 0
-  keysUnion.forEach((key) => {
+  keysUnion.forEach(key => {
     var RSSI1 = fingerprint1[key] || DEFAULT_RSSI // Check what happens if default RSSI is not 0 and if there are RSSI with 0 value
     var RSSI2 = fingerprint2[key] || DEFAULT_RSSI
     sumatorial += Math.abs(RSSI1 - RSSI2)
