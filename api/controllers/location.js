@@ -10,8 +10,7 @@ const K2 = 10
 
 module.exports = {
   getLocation: async (req, res) => {
-    const buildingId = req.body._id
-    const query = Sample.find({ buildingId: buildingId })
+    const query = Sample.find({})
     query.lean()
 
     try {
@@ -22,21 +21,36 @@ module.exports = {
       }
 
       // Do algorithm
-      const mainFingerprintSortedSSIDs = sortSSIDsByRSSI(req.body.fingerprint)
+      const mainFingerprintSortedSSIDs = sortSSIDsByRSSI(req.body)
       samples.forEach(sample => {
         sample.sortedIds = sortSSIDsByRSSI(sample.fingerprint)
       })
 
+      // Calculate the building:
+
+      // Step 1: Take AP0, the strongest AP observed in fp0.
+      const strongestSSIDsForBuilding = mainFingerprintSortedSSIDs.slice(0, 3)
+
+      // Step 2: Build R’, a subset of the radio map R, with all the samples where the strongest AP is AP0.
+      var R0 = []
+      samples.forEach(sample => {
+        if (strongestSSIDsForBuilding.includes(sample.sortedIds[0])) R0.push(sample)
+      })
+      // Step 3: TODO If R’ is an empty set, repeat steps 1 and 2 for the 2nd, 3rd, ..., strongest AP in fp0.
+
+      // Step 4: Count the number of samples in R’ associated to each building and set b to the most frequent building (majority rule).
+      var mostFrequentBuilding = getMostFrequent(R0, 'buildingId')
+
       // Calculate the floor:
 
-      // Strep 1: We don't need it now because we are now receiving the building in the params. But // TODO change this to calculate building
-      // Build R’, a subset of R, with all the samples where the building is b (the building estimated in the previous step)
+      // Strep 1: Build R’, a subset of R, with all the samples where the building is b (the building estimated in the previous step)
+      let R1 = R0.filter(sample => sample.buildingId.equals(mostFrequentBuilding))
 
       // Strep 2:
       // Build R’’, a subset of R’, with all the samples where the strongest AP is equal to AP0, AP1 or AP2
       const strongestSSIDs = mainFingerprintSortedSSIDs.slice(0, 3)
       var R2 = []
-      samples.forEach(sample => {
+      R1.forEach(sample => {
         if (strongestSSIDs.includes(sample.sortedIds[0])) R2.push(sample)
       })
 
@@ -48,7 +62,7 @@ module.exports = {
       // The similarity function S() is the Manhattan distance
 
       R2.forEach(sample => {
-        sample.similarity = manhattanDistance(sample.fingerprint, req.body.fingerprint)
+        sample.similarity = manhattanDistance(sample.fingerprint, req.body)
       })
 
       // Step 5:
@@ -59,7 +73,7 @@ module.exports = {
 
       // Step 6:
       // Count the number of samples, from within the k1, associated to each floor, and set f to the most frequent floor (majority rule).
-      var mostFrequentFloor = getMostFrequentFloor(mostSimilarSamples)
+      var mostFrequentFloor = getMostFrequent(mostSimilarSamples, 'floorId')
 
       // Calculate the position:
 
@@ -82,7 +96,7 @@ module.exports = {
       // Compute the estimated coordinates as the centroid of the k2 samples.
       var position = getCentroid(mostSimilarSamples)
       position.floorId = mostFrequentFloor
-      position.buildingId = buildingId
+      position.buildingId = mostFrequentBuilding
       res.json(position)
     } catch (err) {
       res.status(400).json(err)
@@ -107,22 +121,22 @@ function sortSSIDsByRSSI (fingerprint) {
   return Object.keys(fingerprint).sort((SSID1, SSID2) => fingerprint[SSID2] - fingerprint[SSID1])
 }
 
-function getMostFrequentFloor (samples) { // TODO this can be done in a more efficient way
-  var floorsCount = {}
-  var mostFrequentFloor = ''
+function getMostFrequent (samples, key) {
+  var elementsCount = {}
+  var mostFrequent = ''
   var maxCount = 0
   for (let sample of samples) {
-    if (floorsCount[sample.floorId]) {
-      floorsCount[sample.floorId]++
+    if (elementsCount[sample[key]]) {
+      elementsCount[sample[key]]++
     } else {
-      floorsCount[sample.floorId] = 1
+      elementsCount[sample[key]] = 1
     }
-    if (maxCount < floorsCount[sample.floorId]) {
-      mostFrequentFloor = sample.floorId
-      maxCount = floorsCount[sample.floorId]
+    if (maxCount < elementsCount[sample[key]]) {
+      mostFrequent = sample[key]
+      maxCount = elementsCount[sample[key]]
     }
   }
-  return mostFrequentFloor
+  return mostFrequent
 }
 
 function manhattanDistance (fingerprint1, fingerprint2) {

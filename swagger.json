@@ -450,7 +450,7 @@
             "name": "fingerprint",
             "description": "Location body with fingerprint and id",
             "schema": {
-              "$ref": "#/definitions/FingerprintWithId"
+              "$ref": "#/definitions/Fingerprint"
             }
           }
         ],
@@ -622,16 +622,6 @@
         "fingerprint"
       ]
     },
-    "FingerprintWithId": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/id"
-        },
-        {
-          "$ref": "#/definitions/Fingerprint"
-        }
-      ]
-    },
     "Fingerprint":
     {
       "type": "object",
@@ -639,8 +629,8 @@
         "type": "number"
       },
       "example": {
-        "9823472984BFA5C": -35,
-        "BD4353453C3453A": -5
+        "A": -35,
+        "B": -5
       }
     }
   },
