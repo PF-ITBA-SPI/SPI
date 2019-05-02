@@ -23,20 +23,15 @@ module.exports = {
       // Do algorithm
       const mainFingerprintSortedSSIDs = sortSSIDsByRSSI(req.body)
       samples.forEach(sample => {
-        sample.sortedIds = sortSSIDsByRSSI(sample.fingerprint)
+        sample.sortedIdsByRSSI = sortSSIDsByRSSI(sample.fingerprint)
       })
 
       // Calculate the building:
 
       // Step 1: Take AP0, the strongest AP observed in fp0.
-      const strongestSSIDsForBuilding = mainFingerprintSortedSSIDs.slice(0, 3)
-
       // Step 2: Build R’, a subset of the radio map R, with all the samples where the strongest AP is AP0.
-      var R0 = []
-      samples.forEach(sample => {
-        if (strongestSSIDsForBuilding.includes(sample.sortedIds[0])) R0.push(sample)
-      })
       // Step 3: TODO If R’ is an empty set, repeat steps 1 and 2 for the 2nd, 3rd, ..., strongest AP in fp0.
+      let R0 = samples.filter(sample => sample.sortedIdsByRSSI[0].equals(mainFingerprintSortedSSIDs[0]))
 
       // Step 4: Count the number of samples in R’ associated to each building and set b to the most frequent building (majority rule).
       var mostFrequentBuilding = getMostFrequent(R0, 'buildingId')
@@ -49,10 +44,7 @@ module.exports = {
       // Strep 2:
       // Build R’’, a subset of R’, with all the samples where the strongest AP is equal to AP0, AP1 or AP2
       const strongestSSIDs = mainFingerprintSortedSSIDs.slice(0, 3)
-      var R2 = []
-      R1.forEach(sample => {
-        if (strongestSSIDs.includes(sample.sortedIds[0])) R2.push(sample)
-      })
+      let R2 = R1.filter(sample => strongestSSIDs.includes(sample.sortedIdsByRSSI[0]))
 
       // Step 3: TODO we are not doing this so we take it as if #(R'') is always big enough
       // If #(R’’) < n, then R’’ = R’, where #(.) denotes the cardinality of a set, and n is a parameter.
