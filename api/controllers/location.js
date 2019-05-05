@@ -21,7 +21,7 @@ module.exports = {
       }
 
       // Do algorithm
-      const mainFingerprintSortedSSIDs = sortSSIDsByRSSI(req.body)
+      const mainFingerprintSortedSSIDsByRSSI = sortSSIDsByRSSI(req.body)
       samples.forEach(sample => {
         sample.sortedIdsByRSSI = sortSSIDsByRSSI(sample.fingerprint)
       })
@@ -32,9 +32,9 @@ module.exports = {
       // Step 2: Build R’, a subset of the radio map R, with all the samples where the strongest AP is AP0.
       // Step 3: If R’ is an empty set, repeat steps 1 and 2 for the 2nd, 3rd, ..., strongest AP in fp0.
       var R0
-      for (let i = 0; i < mainFingerprintSortedSSIDs.size; i++) {
-        R0 = samples.filter(sample => sample.sortedIdsByRSSI[0].equals(mainFingerprintSortedSSIDs[i]))
-        if (R0.size > 0) break
+      for (let i = 0; i < mainFingerprintSortedSSIDsByRSSI.length; i++) {
+        R0 = samples.filter(sample => (sample.sortedIdsByRSSI[0] === mainFingerprintSortedSSIDsByRSSI[i]))
+        if (R0.length > 0) break
       }
       // Step 4: Count the number of samples in R’ associated to each building and set b to the most frequent building (majority rule).
       var mostFrequentBuilding = getMostFrequent(R0, 'buildingId')
@@ -42,9 +42,9 @@ module.exports = {
       // Calculate the floor:
 
       // Strep 1: Build R’, a subset of R, with all the samples where the building is b (the building estimated in the previous step)
-      let R1 = R0.filter(sample => sample.buildingId.equals(mostFrequentBuilding))
+      let R1 = samples.filter(sample => sample.buildingId.equals(mostFrequentBuilding))
       // Strep 2: Build R’’, a subset of R’, with all the samples where the strongest AP is equal to AP0, AP1 or AP2
-      let R2 = R1.filter(sample => mainFingerprintSortedSSIDs.slice(0, 3).includes(sample.sortedIdsByRSSI[0]))
+      let R2 = R1.filter(sample => mainFingerprintSortedSSIDsByRSSI.slice(0, 3).includes(sample.sortedIdsByRSSI[0]))
       // Step 3: TODO we are not doing this so we take it as if #(R'') is always big enough
       // If #(R’’) < n, then R’’ = R’, where #(.) denotes the cardinality of a set, and n is a parameter.
 
