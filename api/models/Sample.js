@@ -22,10 +22,13 @@ const SampleSchema = new Schema({
   },
   fingerprint: {
     type: Map,
-    // Keys are always strings (access point BSSIDs), values are numbers (RSSIDs)
+    // Keys are always strings (access point BSSIDs), values are numbers (RSSIs)
     of: Number,
     required: true
   },
+  extra: {
+    type: Schema.Types.Mixed,
+  }
 })
 
 module.exports = mongoose.model('Sample', SampleSchema)
