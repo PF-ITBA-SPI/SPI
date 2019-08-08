@@ -33,7 +33,7 @@ module.exports = {
       // Step 3: If R’ is an empty set, repeat steps 1 and 2 for the 2nd, 3rd, ..., strongest AP in fp0.
       var R0
       for (let i = 0; i < mainFingerprintSortedSSIDsByRSSI.length; i++) {
-        R0 = samples.filter(sample => (sample.sortedIdsByRSSI[0] === mainFingerprintSortedSSIDsByRSSI[i]))
+        R0 = samples.filter(sample => sample.sortedIdsByRSSI[0] === mainFingerprintSortedSSIDsByRSSI[i])
         if (R0.length > 0) break
       }
       // Step 4: Count the number of samples in R’ associated to each building and set b to the most frequent building (majority rule).
@@ -88,7 +88,7 @@ function getCentroid (samples) {
 }
 
 /*
-  Return the SSIDs of the fingerprint sorted by their RSSI value in the fingerprint, by biggest to smallest
+  Return the SSIDs of the fingerprint sorted by their RSSI value in the fingerprint, from biggest to smallest
  */
 function sortSSIDsByRSSI (fingerprint) {
   return Object.keys(fingerprint).sort((SSID1, SSID2) => fingerprint[SSID2] - fingerprint[SSID1])
