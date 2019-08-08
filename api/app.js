@@ -24,7 +24,7 @@ app.use(process.env.NODE_ENV === 'production' ? jwt.verifier : jwt.mockVerifier)
 const guard = require('express-jwt-permissions')()
 const PUBLIC_ENDPOINTS = ['/', '/ping', /^\/api-docs/] // api-docs is a regex because it also serves some other files CSS, etc. so it's not an exact match, unlike / and /ping
 app.get('/*', guard.check('user').unless({ path: PUBLIC_ENDPOINTS }))
-app.post('/*', guard.check('admin'))
+app.post('/*', guard.check('admin').unless({ path: '/location' }))
 app.put('/*', guard.check('admin'))
 app.delete('/*', guard.check('admin'))
 app.use(jwt.errorHandler)
