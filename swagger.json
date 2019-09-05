@@ -435,7 +435,7 @@
       "post": {
         "x-swagger-router-controller": "location",
         "operationId": "getLocation",
-        "summary": "Gets the location of the user given a fingerprint and a building Id",
+        "summary": "Locate a user given a fingerprint",
         "tags": [
           "/location"
         ],
@@ -448,22 +448,21 @@
           {
             "in": "body",
             "name": "fingerprint",
-            "description": "Location body with fingerprint and id",
+            "description": "Location body with fingerprint",
             "schema": {
               "$ref": "#/definitions/Fingerprint"
             }
           }
         ],
         "responses": {
-          "201": {
-            "description": "Created"
+          "200": {
+            "$ref": "#/responses/200",
+            "schema": {
+              "$ref": "#/definitions/LocationResult"
+            }
           },
           "400": {
-            "description": "Bad request",
-            "schema": {
-            },
-            "examples": {
-            }
+            "description": "Bad request"
           }
         }
       }
@@ -622,8 +621,7 @@
         "fingerprint"
       ]
     },
-    "Fingerprint":
-    {
+    "Fingerprint": {
       "type": "object",
       "additionalProperties": {
         "type": "number"
@@ -631,6 +629,29 @@
       "example": {
         "A": -35,
         "B": -5
+      }
+    },
+    "LocationResult": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "buildingId": {
+          "type": "string"
+        },
+        "floorId": {
+          "type": "string"
+        }
+      },
+      "example": {
+        "latitude": -34.603079,
+        "longitude": -58.367810,
+        "buildingId": "000000000000000000000000",
+        "floorId": "000000000000000000000000"
       }
     }
   },
