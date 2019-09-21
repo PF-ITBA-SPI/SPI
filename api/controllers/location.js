@@ -64,6 +64,14 @@ function calculateLocation (samples, locationFingerprint) {
     R0 = samples.filter(sample => sample.sortedIdsByRSSI[0] === mainFingerprintSortedSSIDsByRSSI[i])
     if (R0.length > 0) break
   }
+  if (!R0) {
+    return {
+      latitude: null,
+      longitude: null,
+      buildingId: null,
+      floorId: null,
+    }
+  }
   // Step 4: Count the number of samples in R’ associated to each building and set b to the most frequent building (majority rule).
   var mostFrequentBuilding = getMostFrequent(R0, 'buildingId')
 
