@@ -466,6 +466,42 @@
           }
         }
       }
+    },
+    "/location-filtering/{sampleId}": {
+      "get": {
+        "x-swagger-router-controller": "location",
+        "operationId": "getLocationFilteringSample",
+        "summary": "Locate a user emulating the fingerprint of a given sample and excluding the sample when locating",
+        "tags": [
+          "/location"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sampleId",
+            "description": "Sample id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/200",
+            "schema": {
+              "$ref": "#/definitions/LocationResult"
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
     }
   },
   "responses": {

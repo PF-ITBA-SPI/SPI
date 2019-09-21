@@ -19,62 +19,87 @@ module.exports = {
       if (samples === null) {
         return res.status(404)
       }
+      res.json(calculateLocation(samples, req.body))
+    } catch (err) {
+      res.status(400).json(err)
+    }
+  },
 
-      // Do algorithm
-      const mainFingerprintSortedSSIDsByRSSI = sortSSIDsByRSSI(req.body)
-      samples.forEach(sample => {
-        sample.sortedIdsByRSSI = sortSSIDsByRSSI(sample.fingerprint)
-      })
+  getLocationFilteringSample: async (req, res) => {
+    const query = Sample.find({})
+    query.lean()
 
-      // Calculate the building:
-
-      // Step 1: Take AP0, the strongest AP observed in fp0.
-      // Step 2: Build R’, a subset of the radio map R, with all the samples where the strongest AP is AP0.
-      // Step 3: If R’ is an empty set, repeat steps 1 and 2 for the 2nd, 3rd, ..., strongest AP in fp0.
-      var R0
-      for (let i = 0; i < mainFingerprintSortedSSIDsByRSSI.length; i++) {
-        R0 = samples.filter(sample => sample.sortedIdsByRSSI[0] === mainFingerprintSortedSSIDsByRSSI[i])
-        if (R0.length > 0) break
+    try {
+      const samples = await query.exec()
+      if (samples === null) {
+        return res.status(404)
       }
-      // Step 4: Count the number of samples in R’ associated to each building and set b to the most frequent building (majority rule).
-      var mostFrequentBuilding = getMostFrequent(R0, 'buildingId')
-
-      // Calculate the floor:
-
-      // Strep 1: Build R’, a subset of R, with all the samples where the building is b (the building estimated in the previous step)
-      let R1 = samples.filter(sample => sample.buildingId.equals(mostFrequentBuilding))
-      // Strep 2: Build R’’, a subset of R’, with all the samples where the strongest AP is equal to AP0, AP1 or AP2
-      let R2 = R1.filter(sample => mainFingerprintSortedSSIDsByRSSI.slice(0, 3).includes(sample.sortedIdsByRSSI[0]))
-      // Step 3: TODO we are not doing this so we take it as if #(R'') is always big enough
-      // If #(R’’) < n, then R’’ = R’, where #(.) denotes the cardinality of a set, and n is a parameter.
-
-      // Step 4: Compute the similarity, the Manhattan distance, between the fingerprint given and all the fingerprints in R’’.
-      R2.forEach(sample => { sample.similarity = manhattanDistance(sample.fingerprint, req.body) })
-      // Step 5: Take the k1 samples in R’’ that are the most similar to fp0. (The ones with the smaller similarity, TODO check this)
-      R2.sort((sample1, sample2) => sample1.similarity - sample2.similarity)
-      var mostSimilarSamples = R2.slice(0, K1)
-      // Step 6: Count the number of samples, from within the k1, associated to each floor, and set f to the most frequent floor (majority rule).
-      var mostFrequentFloor = getMostFrequent(mostSimilarSamples, 'floorId')
-
-      // Calculate the position:
-
-      // Step 1: Build R’’’, a subset of R’’ (from the floor estimation procedure), with all the samples where the floor is f.
-      let R3 = R2.filter(sample => sample.floorId.equals(mostFrequentFloor))
-      // Step 2: Compute the similarity, S(), between fp0 and all then fingerprints in R’’’. But this was already done in floor step 4
-      // Step 3:
-      // Take the k2 samples in R’’’ that are the most similar to fp0.
-      // The sorting is also already done in step 5 of floor selection TODO check if this is useless
-      R3.sort((sample1, sample2) => sample1.similarity - sample2.similarity)
-      mostSimilarSamples = R3.slice(0, K2)
-      // Step 4: Compute the estimated coordinates as the centroid of the k2 samples.
-      var position = getCentroid(mostSimilarSamples)
-      position.floorId = mostFrequentFloor
-      position.buildingId = mostFrequentBuilding
-      res.json(position)
+      const filteredSampleId = req.params.sampleId
+      const filteredSampleIndex = samples.findIndex(sample => sample._id.equals(filteredSampleId))
+      if (filteredSampleIndex === -1) {
+        return res.status(404).send('Sample not found')
+      }
+      const filteredSample = samples.splice(filteredSampleIndex, 1)[0]
+      res.json(calculateLocation(samples, filteredSample.fingerprint))
     } catch (err) {
       res.status(400).json(err)
     }
   }
+}
+
+function calculateLocation (samples, locationFingerprint) {
+  // Do algorithm
+  const mainFingerprintSortedSSIDsByRSSI = sortSSIDsByRSSI(locationFingerprint)
+  samples.forEach(sample => {
+    sample.sortedIdsByRSSI = sortSSIDsByRSSI(sample.fingerprint)
+  })
+
+  // Calculate the building:
+
+  // Step 1: Take AP0, the strongest AP observed in fp0.
+  // Step 2: Build R’, a subset of the radio map R, with all the samples where the strongest AP is AP0.
+  // Step 3: If R’ is an empty set, repeat steps 1 and 2 for the 2nd, 3rd, ..., strongest AP in fp0.
+  var R0
+  for (let i = 0; i < mainFingerprintSortedSSIDsByRSSI.length; i++) {
+    R0 = samples.filter(sample => sample.sortedIdsByRSSI[0] === mainFingerprintSortedSSIDsByRSSI[i])
+    if (R0.length > 0) break
+  }
+  // Step 4: Count the number of samples in R’ associated to each building and set b to the most frequent building (majority rule).
+  var mostFrequentBuilding = getMostFrequent(R0, 'buildingId')
+
+  // Calculate the floor:
+
+  // Strep 1: Build R’, a subset of R, with all the samples where the building is b (the building estimated in the previous step)
+  let R1 = samples.filter(sample => sample.buildingId.equals(mostFrequentBuilding))
+  // Strep 2: Build R’’, a subset of R’, with all the samples where the strongest AP is equal to AP0, AP1 or AP2
+  let R2 = R1.filter(sample => mainFingerprintSortedSSIDsByRSSI.slice(0, 3).includes(sample.sortedIdsByRSSI[0]))
+  // Step 3: TODO we are not doing this so we take it as if #(R'') is always big enough
+  // If #(R’’) < n, then R’’ = R’, where #(.) denotes the cardinality of a set, and n is a parameter.
+
+  // Step 4: Compute the similarity, the Manhattan distance, between the fingerprint given and all the fingerprints in R’’.
+  R2.forEach(sample => { sample.similarity = manhattanDistance(sample.fingerprint, locationFingerprint) })
+  // Step 5: Take the k1 samples in R’’ that are the most similar to fp0. (The ones with the smaller similarity, TODO check this)
+  R2.sort((sample1, sample2) => sample1.similarity - sample2.similarity)
+  var mostSimilarSamples = R2.slice(0, K1)
+  // Step 6: Count the number of samples, from within the k1, associated to each floor, and set f to the most frequent floor (majority rule).
+  var mostFrequentFloor = getMostFrequent(mostSimilarSamples, 'floorId')
+
+  // Calculate the position:
+
+  // Step 1: Build R’’’, a subset of R’’ (from the floor estimation procedure), with all the samples where the floor is f.
+  let R3 = R2.filter(sample => sample.floorId.equals(mostFrequentFloor))
+  // Step 2: Compute the similarity, S(), between fp0 and all then fingerprints in R’’’. But this was already done in floor step 4
+  // Step 3:
+  // Take the k2 samples in R’’’ that are the most similar to fp0.
+  // The sorting is also already done in step 5 of floor selection TODO check if this is useless
+  R3.sort((sample1, sample2) => sample1.similarity - sample2.similarity)
+  mostSimilarSamples = R3.slice(0, K2)
+  // Step 4: Compute the estimated coordinates as the centroid of the k2 samples.
+  var position = getCentroid(mostSimilarSamples)
+  position.floorId = mostFrequentFloor
+  position.buildingId = mostFrequentBuilding
+
+  return position
 }
 
 function getCentroid (samples) {
