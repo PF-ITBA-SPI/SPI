@@ -9,7 +9,9 @@
     "start:dev": "cross-env NODE_ENV=development nodemon api/server.js",
     "start:prod": "cross-env NODE_ENV=production node api/server.js",
     "lint": "eslint .",
-    "test": "cross-env NODE_ENV=test mocha --exit test/test-setup.js test/**/*.test.js"
+    "test": "cross-env NODE_ENV=test mocha --exit test/test-setup.js test/**/*.test.js",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "pre-commit": [
     "lint"
@@ -39,6 +41,8 @@
     "jsonwebtoken": "^8.5.0",
     "mongoose": "^5.3.5",
     "swagger-express-router": "^1.0.0",
-    "swagger-ui-express": "^4.0.1"
-  }
+    "swagger-ui-express": "^4.0.1",
+    "snyk": "^1.234.2"
+  },
+  "snyk": true
 }
