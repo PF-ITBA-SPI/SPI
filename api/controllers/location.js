@@ -63,7 +63,7 @@ module.exports = {
       })
       const errorMean = Object.values(distances).reduce((acc, current) => { return acc + current }, 0) / Object.values(distances).length
       const meanSquaredError = Object.values(distances).reduce((acc, current) => { return acc + current * current }, 0) / Object.values(distances).length
-      const result = { 'distances': distances, 'errorMean': errorMean, 'quadraticErrorMean': meanSquaredError }
+      const result = { 'distances': distances, 'errorMean': errorMean, 'meanSquaredError': meanSquaredError }
       res.json(result)
     } catch (err) {
       res.status(400).json(err)

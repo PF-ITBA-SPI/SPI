@@ -737,14 +737,14 @@
         "errorMean": {
           "type": "number"
         },
-        "quadraticErrorMean": {
+        "meanSquaredError": {
           "type": "number"
         }
       },
       "example": {
         "distances": {"A": 232, "B":  21},
         "errorMean": 5.3,
-        "quadraticErrorMean": 14.2
+        "meanSquaredError": 14.2
       }
     }
   },
