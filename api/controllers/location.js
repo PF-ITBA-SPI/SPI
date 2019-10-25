@@ -55,14 +55,16 @@ module.exports = {
       if (samples === null) {
         return res.status(404)
       }
+      console.debug(`Calculating error for ${samples.length} samples...`)
       var distances = {}
       samples.forEach((sample) => {
         const filteredSampleId = sample._id
         const location = calculateLocationFilteringSample(samples, filteredSampleId)
         distances[filteredSampleId] = getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000
       })
-      const errorMean = Object.values(distances).reduce((acc, current) => { return acc + current }, 0) / Object.values(distances).length
-      const meanSquaredError = Object.values(distances).reduce((acc, current) => { return acc + current * current }, 0) / Object.values(distances).length
+      const filteredValues = Object.values(distances).filter(v => !isNaN(v)) // Exclude NaN
+      const errorMean = filteredValues.reduce((acc, current) => acc + current, 0) / filteredValues.length
+      const meanSquaredError = filteredValues.reduce((acc, current) => acc + current * current, 0) / filteredValues.length
       const result = { distances, errorMean, meanSquaredError }
       res.json(result)
     } catch (err) {
@@ -72,16 +74,15 @@ module.exports = {
 }
 
 function getDistanceFromLatLonInKm (lat1, lon1, lat2, lon2) { // https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
-  var R = 6371 // Radius of the earth in km
-  var dLat = deg2rad(lat2 - lat1) // deg2rad below
-  var dLon = deg2rad(lon2 - lon1)
-  var a =
+  const R = 6371 // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1) // deg2rad below
+  const dLon = deg2rad(lon2 - lon1)
+  const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
     Math.sin(dLon / 2) * Math.sin(dLon / 2)
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  var d = R * c // Distance in km
-  return d
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c // Distance in km
 }
 
 function deg2rad (deg) {
@@ -89,12 +90,13 @@ function deg2rad (deg) {
 }
 
 function calculateLocationFilteringSample (samples, filteredSampleId) {
-  const filteredSampleIndex = samples.findIndex(sample => sample._id.equals(filteredSampleId))
+  const samplesCopy = [...samples]
+  const filteredSampleIndex = samplesCopy.findIndex(sample => sample._id.equals(filteredSampleId))
   if (filteredSampleIndex === -1) {
     return -1
   }
-  const filteredSample = samples.splice(filteredSampleIndex, 1)[0]
-  return calculateLocation(samples, filteredSample.fingerprint)
+  const filteredSample = samplesCopy.splice(filteredSampleIndex, 1)[0]
+  return calculateLocation(samplesCopy, filteredSample.fingerprint)
 }
 
 function calculateLocation (samples, locationFingerprint) {
