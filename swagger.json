@@ -467,6 +467,34 @@
         }
       }
     },
+    "/location-error": {
+      "get": {
+        "x-swagger-router-controller": "location",
+        "operationId": "getLocationError",
+        "summary": "Calculate the errors of all samples",
+        "tags": [
+          "/location"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/200",
+            "schema": {
+              "$ref": "#/definitions/ErrorResult"
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
     "/location-filtering/{sampleId}": {
       "get": {
         "x-swagger-router-controller": "location",
@@ -667,10 +695,20 @@
         "B": -5
       }
     },
+    "ErrorList": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "example": {
+        "A": -35,
+        "B": -5
+      }
+    },
     "LocationResult": {
       "type": "object",
       "properties": {
-        "latitude": {
+        "errors": {
           "type": "number"
         },
         "longitude": {
@@ -688,6 +726,25 @@
         "longitude": -58.367810,
         "buildingId": "000000000000000000000000",
         "floorId": "000000000000000000000000"
+      }
+    },
+    "ErrorResult": {
+      "type": "object",
+      "properties": {
+        "distances": {
+          "$ref": "#/definitions/ErrorList"
+        },
+        "errorMean": {
+          "type": "number"
+        },
+        "meanSquaredError": {
+          "type": "number"
+        }
+      },
+      "example": {
+        "distances": {"A": 232, "B":  21},
+        "errorMean": 5.3,
+        "meanSquaredError": 14.2
       }
     }
   },
