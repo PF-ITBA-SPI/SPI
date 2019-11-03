@@ -48,19 +48,33 @@ module.exports = {
   },
 
   getLocationError: async (req, res) => {
-    const query = Sample.find({})
+    const query = Sample.find({ fingerprint: { '$ne': {} } }) // With at least one fingerprint
     query.lean()
     try {
       const samples = await query.exec()
+      // const samples = require('C:\\Users\\juan_\\Desktop\\samples.json')
+      //   .filter(s => Object.entries(s.fingerprint).length > 0)
+      //   .map(entry => {
+      //     ['_id', 'buildingId', 'floorId'].forEach(key => {
+      //       if (entry.hasOwnProperty(key)) {
+      //         entry[key] = new mongoose.Types.ObjectId(entry[key]); // Convert to ObjectId
+      //       }
+      //     })
+      //     return entry
+      //   })
       if (samples === null) {
         return res.status(404)
       }
       console.debug(`Calculating error for ${samples.length} samples...`)
-      var distances = {}
+      const distances = {}
       samples.forEach((sample) => {
         const filteredSampleId = sample._id
         const location = calculateLocationFilteringSample(samples, filteredSampleId)
-        distances[filteredSampleId] = getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000
+        if (location.latitude !== null && location.longitude !== null && location.buildingId != null && location.floorId !== null) {
+          distances[filteredSampleId] = getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000
+        } else {
+          // TODO what do we do here? Sample was not located anywhere
+        }
       })
       const filteredValues = Object.values(distances).filter(v => !isNaN(v)) // Exclude NaN
       const errorMean = filteredValues.reduce((acc, current) => acc + current, 0) / filteredValues.length
@@ -116,7 +130,7 @@ function calculateLocation (samples, locationFingerprint) {
     R0 = samples.filter(sample => sample.sortedIdsByRSSI[0] === mainFingerprintSortedSSIDsByRSSI[i])
     if (R0.length > 0) break
   }
-  if (!R0) {
+  if (!R0.length) {
     return {
       latitude: null,
       longitude: null,
