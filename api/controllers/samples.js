@@ -8,6 +8,11 @@ module.exports = {
   create: async (req, res) => {
     const params = Object.assign({}, req.body, { buildingId: req.params.buildingId })
     const sample = new Sample(params)
+    if (req.body.fingerprint && Object.keys(req.body.fingerprint).length === 0) {
+      return res.status(400).json({
+        message: 'Fingerprint must not be empty, at least one AP must have been detected.'
+      })
+    }
     try {
       await sample.save()
       res.status(201).json(sample)

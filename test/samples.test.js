@@ -145,6 +145,21 @@ describe('Samples', function () {
           done()
         })
     })
+
+    it('requires a non-empty fingerprint', function (done) {
+      const payload = Object.assign({ floorId: building.floors[0]._id }, sampleSample)
+      payload.fingerprint = {}
+
+      requester
+        .post(`/buildings/${building._id}/samples`)
+        .send(payload)
+        .then(function (res) {
+          res.should.have.status(400)
+          res.body.should.have.property('message')
+          res.body.message.should.match(/Fingerprint must not be empty, at least one AP must have been detected./)
+          done()
+        })
+    })
   })
 
   describe('PUT', function () {
