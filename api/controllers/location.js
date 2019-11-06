@@ -67,25 +67,82 @@ module.exports = {
         return res.status(404)
       }
       console.debug(`Calculating error for ${samples.length} samples...`)
-      const distances = {}
-      samples.forEach((sample) => {
-        const filteredSampleId = sample._id
-        const location = calculateLocationFilteringSample(samples, filteredSampleId)
-        if (location.latitude !== null && location.longitude !== null && location.buildingId != null && location.floorId !== null) {
-          distances[filteredSampleId] = getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000
-        } else {
-          // TODO what do we do here? Sample was not located anywhere
-        }
+      res.json(calculateLocationsError(samples))
+    } catch (err) {
+      res.status(400).json(err)
+    }
+  },
+
+  getLocationErrorParametrized: async (req, res) => {
+    const query = Sample.find({ fingerprint: { '$ne': {} } }) // With at least one fingerprint
+    query.lean()
+    const k1Values = [2, 4, 6, 8, 10]
+    const k2Values = [2, 4, 6, 8, 10]
+    const floorAPNumberValues = [1, 2, 3, 4, 5, 6]
+    const minSamplesForPositionValues = [1, 3, 5]
+    const defaultRSSIValues = [0]
+    try {
+      const samples = await query.exec()
+      // const samples = require('C:\\Users\\juan_\\Desktop\\samples.json')
+      //   .filter(s => Object.entries(s.fingerprint).length > 0)
+      //   .map(entry => {
+      //     ['_id', 'buildingId', 'floorId'].forEach(key => {
+      //       if (entry.hasOwnProperty(key)) {
+      //         entry[key] = new mongoose.Types.ObjectId(entry[key]); // Convert to ObjectId
+      //       }
+      //     })
+      //     return entry
+      //   })
+      if (samples === null) {
+        return res.status(404)
+      }
+      console.debug(`Calculating error for ${samples.length} samples...`)
+      // TODO rewrite this as a recursive function instead of 5 nested for
+      var errorsK1 = {}
+      k1Values.forEach((k1) => {
+        var errorsK2 = {}
+        k2Values.forEach((k2) => {
+          var errorsFloorAPNumber = {}
+          floorAPNumberValues.forEach((floorAPNumber) => {
+            var errorsMinSamples = {}
+            minSamplesForPositionValues.forEach((minSamplesForPosition) => {
+              var errorsDefaultRSSI = {}
+              defaultRSSIValues.forEach((defaultRSSI) => {
+                const samplesCopy = samples.copy() // TODO check copy
+                const error = calculateLocationsError(samplesCopy, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
+                errorsDefaultRSSI[defaultRSSI] = error
+              })
+              errorsMinSamples[minSamplesForPosition] = errorsDefaultRSSI
+            })
+            errorsFloorAPNumber[floorAPNumber] = errorsMinSamples
+          })
+          errorsK2[k2] = errorsFloorAPNumber
+        })
+        errorsK1[k1] = errorsK2
       })
-      const filteredValues = Object.values(distances).filter(v => !isNaN(v)) // Exclude NaN
-      const errorMean = filteredValues.reduce((acc, current) => acc + current, 0) / filteredValues.length
-      const meanSquaredError = filteredValues.reduce((acc, current) => acc + current * current, 0) / filteredValues.length
-      const result = { distances, errorMean, meanSquaredError }
-      res.json(result)
+      res.json(errorsK1)
     } catch (err) {
       res.status(400).json(err)
     }
   }
+}
+
+function calculateLocationsError (samples, defaultRSSI = DEFAULT_RSSI, k1 = K1, k2 = K2, floorAPNumber = FLOOR_AP_NUMBER, minSamplesForPosition = MIN_SAMPLES_FOR_POSITION) {
+  const distances = {}
+  samples.forEach((sample) => {
+    const filteredSampleId = sample._id
+    const location = calculateLocationFilteringSample(samples, filteredSampleId, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
+    if (location.latitude !== null && location.longitude !== null && location.buildingId != null && location.floorId !== null) {
+      distances[filteredSampleId] = getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000
+    } else {
+      // TODO what do we do here? Sample was not located anywhere
+    }
+  })
+  const filteredValues = Object.values(distances).filter(v => !isNaN(v)) // Exclude NaN
+  const errorMean = filteredValues.reduce((acc, current) => acc + current, 0) / filteredValues.length
+  const meanSquaredError = filteredValues.reduce((acc, current) => acc + current * current, 0) / filteredValues.length
+  const result = { distances, errorMean, meanSquaredError }
+  return result
 }
 
 function getDistanceFromLatLonInKm (lat1, lon1, lat2, lon2) { // https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
