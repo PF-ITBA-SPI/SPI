@@ -66,20 +66,29 @@ module.exports = {
         return res.status(404)
       }
       console.debug(`Calculating error for ${samples.length} samples...`)
-      const distances = {}
+      const result = {}
       samples.forEach((sample) => {
         const filteredSampleId = sample._id
         const location = calculateLocationFilteringSample(samples, filteredSampleId)
         if (location.latitude !== null && location.longitude !== null && location.buildingId != null && location.floorId !== null) {
-          distances[filteredSampleId] = getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000
+          result[filteredSampleId] = {
+            distance: getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000,
+            buildingId: location.buildingId,
+            realBuildingId: location.realBuildingId,
+            correctBuilding: location.correctBuilding,
+            floorId: location.floorId,
+            realFloorId: location.realFloorId,
+            correctFloor: location.correctFloor,
+          }
         } else {
           // TODO what do we do here? Sample was not located anywhere
         }
       })
-      const filteredValues = Object.values(distances).filter(v => !isNaN(v)) // Exclude NaN
-      const errorMean = filteredValues.reduce((acc, current) => acc + current, 0) / filteredValues.length
-      const meanSquaredError = filteredValues.reduce((acc, current) => acc + current * current, 0) / filteredValues.length
-      const result = { distances, errorMean, meanSquaredError }
+      const filteredDistances = Object.values(result).map(entry => entry.distance).filter(d => !isNaN(d)) // Exclude NaN
+      const errorMean = filteredDistances.reduce((acc, current) => acc + current, 0) / filteredDistances.length
+      const meanSquaredError = filteredDistances.reduce((acc, current) => acc + current * current, 0) / filteredDistances.length
+      result.errorMean = errorMean
+      result.meanSquaredError = meanSquaredError
       res.json(result)
     } catch (err) {
       res.status(400).json(err)
@@ -110,7 +119,14 @@ function calculateLocationFilteringSample (samples, filteredSampleId) {
     return -1
   }
   const filteredSample = samplesCopy.splice(filteredSampleIndex, 1)[0]
-  return calculateLocation(samplesCopy, filteredSample.fingerprint)
+  const calculatedLocation = calculateLocation(samplesCopy, filteredSample.fingerprint)
+  return {
+    ...calculatedLocation,
+    realBuildingId: filteredSample.buildingId,
+    correctBuilding: (calculatedLocation.buildingId || '').toString() === filteredSample.buildingId.toString(),
+    realFloorId: filteredSample.floorId,
+    correctFloor: (calculatedLocation.floorId || '').toString() === filteredSample.floorId.toString(),
+  }
 }
 
 function calculateLocation (samples, locationFingerprint) {
