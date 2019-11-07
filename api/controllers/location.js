@@ -98,26 +98,23 @@ module.exports = {
       }
       console.debug(`Calculating error for ${samples.length} samples...`)
       // TODO rewrite this as a recursive function instead of 5 nested for
-      var results = {}
+      let result = []
       k1Values.forEach((k1) => {
         k2Values.forEach((k2) => {
           floorAPNumberValues.forEach((floorAPNumber) => {
             minSamplesForPositionValues.forEach((minSamplesForPosition) => {
               defaultRSSIValues.forEach((defaultRSSI) => {
-                const samplesCopy = JSON.parse(JSON.stringify(samples))
-                const error = calculateLocationsError(samplesCopy, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
-                error.k1 = k1
-                error.k2 = k2
-                error.floorAPNumber = floorAPNumber
-                error.minSamplesForPosition = minSamplesForPosition
-                error.defaultRSSI = defaultRSSI
+                console.log(`Calculating error for K1 = ${k1}, K2 = ${k2}, floorAPNumber = ${floorAPNumber}, minSamplesForPosition = ${minSamplesForPosition}, defaultRSSI = ${defaultRSSI}`)
+                const run = calculateLocationsError(samples, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
+                result.push(run)
               })
             })
           })
         })
       })
-      res.json(results)
+      res.json(result)
     } catch (err) {
+      console.error(err)
       res.status(400).json(err)
     }
   }
@@ -145,12 +142,19 @@ function calculateLocationsError (samples, defaultRSSI = DEFAULT_RSSI, k1 = K1, 
 
   const resultValues = Object.values(result)
   const filteredDistances = resultValues.map(entry => entry.distance).filter(d => !isNaN(d)) // Exclude NaN
-  result.errorMean = filteredDistances.reduce((acc, current) => acc + current, 0) / filteredDistances.length
-  result.meanSquaredError = filteredDistances.reduce((acc, current) => acc + current * current, 0) / filteredDistances.length
-  result.correctBuildingPercentage = resultValues.reduce((acc, current) => acc + current.correctBuilding, 0) / resultValues.length
-  result.correctFloorPercentage = resultValues.reduce((acc, current) => acc + current.correctFloor, 0) / resultValues.length
 
-  return result
+  return {
+    ...result,
+    errorMean: filteredDistances.reduce((acc, current) => acc + current, 0) / filteredDistances.length,
+    meanSquaredError: filteredDistances.reduce((acc, current) => acc + current * current, 0) / filteredDistances.length,
+    correctBuildingPercentage: resultValues.reduce((acc, current) => acc + current.correctBuilding, 0) / resultValues.length,
+    correctFloorPercentage: resultValues.reduce((acc, current) => acc + current.correctFloor, 0) / resultValues.length,
+    k1,
+    k2,
+    floorAPNumber,
+    minSamplesForPosition,
+    defaultRSSI
+  }
 }
 
 function getDistanceFromLatLonInKm (lat1, lon1, lat2, lon2) { // https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
