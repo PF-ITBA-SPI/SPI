@@ -98,29 +98,25 @@ module.exports = {
       }
       console.debug(`Calculating error for ${samples.length} samples...`)
       // TODO rewrite this as a recursive function instead of 5 nested for
-      var errorsK1 = {}
+      var results = {}
       k1Values.forEach((k1) => {
-        var errorsK2 = {}
         k2Values.forEach((k2) => {
-          var errorsFloorAPNumber = {}
           floorAPNumberValues.forEach((floorAPNumber) => {
-            var errorsMinSamples = {}
             minSamplesForPositionValues.forEach((minSamplesForPosition) => {
-              var errorsDefaultRSSI = {}
               defaultRSSIValues.forEach((defaultRSSI) => {
-                const samplesCopy = samples.copy() // TODO check copy
+                const samplesCopy = JSON.parse(JSON.stringify(samples))
                 const error = calculateLocationsError(samplesCopy, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
-                errorsDefaultRSSI[defaultRSSI] = error
+                error.k1 = k1
+                error.k2 = k2
+                error.floorAPNumber = floorAPNumber
+                error.minSamplesForPosition = minSamplesForPosition
+                error.defaultRSSI = defaultRSSI
               })
-              errorsMinSamples[minSamplesForPosition] = errorsDefaultRSSI
             })
-            errorsFloorAPNumber[floorAPNumber] = errorsMinSamples
           })
-          errorsK2[k2] = errorsFloorAPNumber
         })
-        errorsK1[k1] = errorsK2
       })
-      res.json(errorsK1)
+      res.json(results)
     } catch (err) {
       res.status(400).json(err)
     }
