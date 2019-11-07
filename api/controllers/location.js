@@ -98,47 +98,63 @@ module.exports = {
       }
       console.debug(`Calculating error for ${samples.length} samples...`)
       // TODO rewrite this as a recursive function instead of 5 nested for
-      var results = {}
+      let result = []
       k1Values.forEach((k1) => {
         k2Values.forEach((k2) => {
           floorAPNumberValues.forEach((floorAPNumber) => {
             minSamplesForPositionValues.forEach((minSamplesForPosition) => {
               defaultRSSIValues.forEach((defaultRSSI) => {
-                const samplesCopy = JSON.parse(JSON.stringify(samples))
-                const error = calculateLocationsError(samplesCopy, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
-                error.k1 = k1
-                error.k2 = k2
-                error.floorAPNumber = floorAPNumber
-                error.minSamplesForPosition = minSamplesForPosition
-                error.defaultRSSI = defaultRSSI
+                console.log(`Calculating error for K1 = ${k1}, K2 = ${k2}, floorAPNumber = ${floorAPNumber}, minSamplesForPosition = ${minSamplesForPosition}, defaultRSSI = ${defaultRSSI}`)
+                const run = calculateLocationsError(samples, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
+                result.push(run)
               })
             })
           })
         })
       })
-      res.json(results)
+      res.json(result)
     } catch (err) {
+      console.error(err)
       res.status(400).json(err)
     }
   }
 }
 
 function calculateLocationsError (samples, defaultRSSI = DEFAULT_RSSI, k1 = K1, k2 = K2, floorAPNumber = FLOOR_AP_NUMBER, minSamplesForPosition = MIN_SAMPLES_FOR_POSITION) {
-  const distances = {}
+  const result = {}
   samples.forEach((sample) => {
     const filteredSampleId = sample._id
     const location = calculateLocationFilteringSample(samples, filteredSampleId, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
     if (location.latitude !== null && location.longitude !== null && location.buildingId != null && location.floorId !== null) {
-      distances[filteredSampleId] = getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000
+      result[filteredSampleId] = {
+        distance: getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000,
+        buildingId: location.buildingId,
+        realBuildingId: location.realBuildingId,
+        correctBuilding: location.correctBuilding,
+        floorId: location.floorId,
+        realFloorId: location.realFloorId,
+        correctFloor: location.correctFloor,
+      }
     } else {
       // TODO what do we do here? Sample was not located anywhere
     }
   })
-  const filteredValues = Object.values(distances).filter(v => !isNaN(v)) // Exclude NaN
-  const errorMean = filteredValues.reduce((acc, current) => acc + current, 0) / filteredValues.length
-  const meanSquaredError = filteredValues.reduce((acc, current) => acc + current * current, 0) / filteredValues.length
-  const result = { distances, errorMean, meanSquaredError }
-  return result
+
+  const resultValues = Object.values(result)
+  const filteredDistances = resultValues.map(entry => entry.distance).filter(d => !isNaN(d)) // Exclude NaN
+
+  return {
+    ...result,
+    errorMean: filteredDistances.reduce((acc, current) => acc + current, 0) / filteredDistances.length,
+    meanSquaredError: filteredDistances.reduce((acc, current) => acc + current * current, 0) / filteredDistances.length,
+    correctBuildingPercentage: resultValues.reduce((acc, current) => acc + current.correctBuilding, 0) / resultValues.length,
+    correctFloorPercentage: resultValues.reduce((acc, current) => acc + current.correctFloor, 0) / resultValues.length,
+    k1,
+    k2,
+    floorAPNumber,
+    minSamplesForPosition,
+    defaultRSSI
+  }
 }
 
 function getDistanceFromLatLonInKm (lat1, lon1, lat2, lon2) { // https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
@@ -164,7 +180,14 @@ function calculateLocationFilteringSample (samples, filteredSampleId, defaultRSS
     return -1
   }
   const filteredSample = samplesCopy.splice(filteredSampleIndex, 1)[0]
-  return calculateLocation(samplesCopy, filteredSample.fingerprint, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
+  const calculatedLocation = calculateLocation(samplesCopy, filteredSample.fingerprint, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
+  return {
+    ...calculatedLocation,
+    realBuildingId: filteredSample.buildingId,
+    correctBuilding: (calculatedLocation.buildingId || '').toString() === filteredSample.buildingId.toString(),
+    realFloorId: filteredSample.floorId,
+    correctFloor: (calculatedLocation.floorId || '').toString() === filteredSample.floorId.toString(),
+  }
 }
 
 function calculateLocation (samples, locationFingerprint, defaultRSSI = DEFAULT_RSSI, k1 = K1, k2 = K2, floorAPNumber = FLOOR_AP_NUMBER, minSamplesForPosition = MIN_SAMPLES_FOR_POSITION) {
