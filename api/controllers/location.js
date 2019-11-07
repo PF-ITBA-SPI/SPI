@@ -7,6 +7,7 @@ const Sample = mongoose.model('Sample')
 const DEFAULT_RSSI = 0
 const K1 = 10
 const K2 = 10
+const FLOOR_AP_NUMBER = 3
 const MIN_SAMPLES_FOR_POSITION = 3
 
 module.exports = {
@@ -66,36 +67,90 @@ module.exports = {
         return res.status(404)
       }
       console.debug(`Calculating error for ${samples.length} samples...`)
-      const result = {}
-      samples.forEach((sample) => {
-        const filteredSampleId = sample._id
-        const location = calculateLocationFilteringSample(samples, filteredSampleId)
-        if (location.latitude !== null && location.longitude !== null && location.buildingId != null && location.floorId !== null) {
-          result[filteredSampleId] = {
-            distance: getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000,
-            buildingId: location.buildingId,
-            realBuildingId: location.realBuildingId,
-            correctBuilding: location.correctBuilding,
-            floorId: location.floorId,
-            realFloorId: location.realFloorId,
-            correctFloor: location.correctFloor,
-          }
-        } else {
-          // TODO what do we do here? Sample was not located anywhere
-        }
-      })
-      const resultValues = Object.values(result)
-      const filteredDistances = resultValues.map(entry => entry.distance).filter(d => !isNaN(d)) // Exclude NaN
+      res.json(calculateLocationsError(samples))
+    } catch (err) {
+      res.status(400).json(err)
+    }
+  },
 
-      result.errorMean = filteredDistances.reduce((acc, current) => acc + current, 0) / filteredDistances.length
-      result.meanSquaredError = filteredDistances.reduce((acc, current) => acc + current * current, 0) / filteredDistances.length
-      result.correctBuildingPercentage = resultValues.reduce((acc, current) => acc + current.correctBuilding, 0) / resultValues.length
-      result.correctFloorPercentage = resultValues.reduce((acc, current) => acc + current.correctFloor, 0) / resultValues.length
-      res.json(result)
+  getLocationErrorParametrized: async (req, res) => {
+    const query = Sample.find({ fingerprint: { '$ne': {} } }) // With at least one fingerprint
+    query.lean()
+    const k1Values = [2, 4, 6, 8, 10]
+    const k2Values = [2, 4, 6, 8, 10]
+    const floorAPNumberValues = [1, 2, 3, 4, 5, 6]
+    const minSamplesForPositionValues = [1, 3, 5]
+    const defaultRSSIValues = [0]
+    try {
+      const samples = await query.exec()
+      // const samples = require('C:\\Users\\juan_\\Desktop\\samples.json')
+      //   .filter(s => Object.entries(s.fingerprint).length > 0)
+      //   .map(entry => {
+      //     ['_id', 'buildingId', 'floorId'].forEach(key => {
+      //       if (entry.hasOwnProperty(key)) {
+      //         entry[key] = new mongoose.Types.ObjectId(entry[key]); // Convert to ObjectId
+      //       }
+      //     })
+      //     return entry
+      //   })
+      if (samples === null) {
+        return res.status(404)
+      }
+      console.debug(`Calculating error for ${samples.length} samples...`)
+      // TODO rewrite this as a recursive function instead of 5 nested for
+      var results = {}
+      k1Values.forEach((k1) => {
+        k2Values.forEach((k2) => {
+          floorAPNumberValues.forEach((floorAPNumber) => {
+            minSamplesForPositionValues.forEach((minSamplesForPosition) => {
+              defaultRSSIValues.forEach((defaultRSSI) => {
+                const samplesCopy = JSON.parse(JSON.stringify(samples))
+                const error = calculateLocationsError(samplesCopy, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
+                error.k1 = k1
+                error.k2 = k2
+                error.floorAPNumber = floorAPNumber
+                error.minSamplesForPosition = minSamplesForPosition
+                error.defaultRSSI = defaultRSSI
+              })
+            })
+          })
+        })
+      })
+      res.json(results)
     } catch (err) {
       res.status(400).json(err)
     }
   }
+}
+
+function calculateLocationsError (samples, defaultRSSI = DEFAULT_RSSI, k1 = K1, k2 = K2, floorAPNumber = FLOOR_AP_NUMBER, minSamplesForPosition = MIN_SAMPLES_FOR_POSITION) {
+  const result = {}
+  samples.forEach((sample) => {
+    const filteredSampleId = sample._id
+    const location = calculateLocationFilteringSample(samples, filteredSampleId, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
+    if (location.latitude !== null && location.longitude !== null && location.buildingId != null && location.floorId !== null) {
+      result[filteredSampleId] = {
+        distance: getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000,
+        buildingId: location.buildingId,
+        realBuildingId: location.realBuildingId,
+        correctBuilding: location.correctBuilding,
+        floorId: location.floorId,
+        realFloorId: location.realFloorId,
+        correctFloor: location.correctFloor,
+      }
+    } else {
+      // TODO what do we do here? Sample was not located anywhere
+    }
+  })
+
+  const resultValues = Object.values(result)
+  const filteredDistances = resultValues.map(entry => entry.distance).filter(d => !isNaN(d)) // Exclude NaN
+  result.errorMean = filteredDistances.reduce((acc, current) => acc + current, 0) / filteredDistances.length
+  result.meanSquaredError = filteredDistances.reduce((acc, current) => acc + current * current, 0) / filteredDistances.length
+  result.correctBuildingPercentage = resultValues.reduce((acc, current) => acc + current.correctBuilding, 0) / resultValues.length
+  result.correctFloorPercentage = resultValues.reduce((acc, current) => acc + current.correctFloor, 0) / resultValues.length
+
+  return result
 }
 
 function getDistanceFromLatLonInKm (lat1, lon1, lat2, lon2) { // https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
@@ -114,14 +169,14 @@ function deg2rad (deg) {
   return deg * (Math.PI / 180)
 }
 
-function calculateLocationFilteringSample (samples, filteredSampleId) {
+function calculateLocationFilteringSample (samples, filteredSampleId, defaultRSSI = DEFAULT_RSSI, k1 = K1, k2 = K2, floorAPNumber = FLOOR_AP_NUMBER, minSamplesForPosition = MIN_SAMPLES_FOR_POSITION) {
   const samplesCopy = [...samples]
   const filteredSampleIndex = samplesCopy.findIndex(sample => sample._id.equals(filteredSampleId))
   if (filteredSampleIndex === -1) {
     return -1
   }
   const filteredSample = samplesCopy.splice(filteredSampleIndex, 1)[0]
-  const calculatedLocation = calculateLocation(samplesCopy, filteredSample.fingerprint)
+  const calculatedLocation = calculateLocation(samplesCopy, filteredSample.fingerprint, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
   return {
     ...calculatedLocation,
     realBuildingId: filteredSample.buildingId,
@@ -131,7 +186,7 @@ function calculateLocationFilteringSample (samples, filteredSampleId) {
   }
 }
 
-function calculateLocation (samples, locationFingerprint) {
+function calculateLocation (samples, locationFingerprint, defaultRSSI = DEFAULT_RSSI, k1 = K1, k2 = K2, floorAPNumber = FLOOR_AP_NUMBER, minSamplesForPosition = MIN_SAMPLES_FOR_POSITION) {
   // Do algorithm
   const mainFingerprintSortedSSIDsByRSSI = sortSSIDsByRSSI(locationFingerprint)
   samples.forEach(sample => {
@@ -140,7 +195,7 @@ function calculateLocation (samples, locationFingerprint) {
 
   // Calculate the building:
 
-  // Step 1: Take AP0, the strongest AP observed in fp0.
+  // Step 1: Take AP0, the strongest AP observed in fp0. // TODO take the top 3 strongest AP?
   // Step 2: Build R’, a subset of the radio map R, with all the samples where the strongest AP is AP0.
   // Step 3: If R’ is an empty set, repeat steps 1 and 2 for the 2nd, 3rd, ..., strongest AP in fp0.
   var R0
@@ -163,16 +218,16 @@ function calculateLocation (samples, locationFingerprint) {
 
   // Strep 1: Build R’, a subset of R, with all the samples where the building is b (the building estimated in the previous step)
   let R1 = samples.filter(sample => sample.buildingId.equals(mostFrequentBuilding))
-  // Strep 2: Build R’’, a subset of R’, with all the samples where the strongest AP is equal to AP0, AP1 or AP2
-  let R2 = R1.filter(sample => mainFingerprintSortedSSIDsByRSSI.slice(0, 3).includes(sample.sortedIdsByRSSI[0]))
+  // Strep 2: Build R’’, a subset of R’, with all the samples where the strongest AP is equal to AP0, AP1 or AP2 until AP(N-1) where N = FLOOR_AP_NUMBER # TODO use the top 3 strongest?
+  let R2 = R1.filter(sample => mainFingerprintSortedSSIDsByRSSI.slice(0, floorAPNumber).includes(sample.sortedIdsByRSSI[0]))
   // Step 3: TODO we are not doing this so we take it as if #(R'') is always big enough
   // If #(R’’) < n, then R’’ = R’, where #(.) denotes the cardinality of a set, and n is a parameter.
-  if (R2.length <= MIN_SAMPLES_FOR_POSITION) R2 = R1
+  if (R2.length <= minSamplesForPosition) R2 = R1
   // Step 4: Compute the similarity, the Manhattan distance, between the fingerprint given and all the fingerprints in R’’.
-  R2.forEach(sample => { sample.similarity = manhattanDistance(sample.fingerprint, locationFingerprint) })
+  R2.forEach(sample => { sample.similarity = manhattanDistance(sample.fingerprint, locationFingerprint, defaultRSSI) })
   // Step 5: Take the k1 samples in R’’ that are the most similar to fp0. (The ones with the smaller similarity, TODO check this)
   R2.sort((sample1, sample2) => sample1.similarity - sample2.similarity)
-  var mostSimilarSamples = R2.slice(0, K1)
+  var mostSimilarSamples = R2.slice(0, k1)
   // Step 6: Count the number of samples, from within the k1, associated to each floor, and set f to the most frequent floor (majority rule).
   var mostFrequentFloor = getMostFrequent(mostSimilarSamples, 'floorId')
 
@@ -185,7 +240,7 @@ function calculateLocation (samples, locationFingerprint) {
   // Take the k2 samples in R’’’ that are the most similar to fp0.
   // The sorting is also already done in step 5 of floor selection TODO check if this is useless
   R3.sort((sample1, sample2) => sample1.similarity - sample2.similarity)
-  mostSimilarSamples = R3.slice(0, K2)
+  mostSimilarSamples = R3.slice(0, k2)
   // Step 4: Compute the estimated coordinates as the centroid of the k2 samples.
   var position = getCentroid(mostSimilarSamples)
   position.floorId = mostFrequentFloor
@@ -229,14 +284,14 @@ function getMostFrequent (samples, key) {
   return mostFrequent
 }
 
-function manhattanDistance (fingerprint1, fingerprint2) {
+function manhattanDistance (fingerprint1, fingerprint2, defaultRSSI) {
   var keysUnion = [...new Set([...Object.keys(fingerprint1), ...Object.keys(fingerprint2)])]
   var unionSize = keysUnion.length
   var intersectionSize = Object.keys(fingerprint1).length + Object.keys(fingerprint2).length - keysUnion.length
   var sumatorial = 0
   keysUnion.forEach(key => {
-    var RSSI1 = fingerprint1[key] || DEFAULT_RSSI // Check what happens if default RSSI is not 0 and if there are RSSI with 0 value
-    var RSSI2 = fingerprint2[key] || DEFAULT_RSSI
+    var RSSI1 = fingerprint1[key] || defaultRSSI // TODO Check what happens if default RSSI is not 0 and if there are RSSI with 0 value
+    var RSSI2 = fingerprint2[key] || defaultRSSI
     sumatorial += Math.abs(RSSI1 - RSSI2)
   })
   return sumatorial / unionSize - 2 * intersectionSize
