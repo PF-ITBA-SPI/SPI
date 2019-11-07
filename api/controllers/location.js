@@ -84,11 +84,13 @@ module.exports = {
           // TODO what do we do here? Sample was not located anywhere
         }
       })
-      const filteredDistances = Object.values(result).map(entry => entry.distance).filter(d => !isNaN(d)) // Exclude NaN
-      const errorMean = filteredDistances.reduce((acc, current) => acc + current, 0) / filteredDistances.length
-      const meanSquaredError = filteredDistances.reduce((acc, current) => acc + current * current, 0) / filteredDistances.length
-      result.errorMean = errorMean
-      result.meanSquaredError = meanSquaredError
+      const resultValues = Object.values(result)
+      const filteredDistances = resultValues.map(entry => entry.distance).filter(d => !isNaN(d)) // Exclude NaN
+
+      result.errorMean = filteredDistances.reduce((acc, current) => acc + current, 0) / filteredDistances.length
+      result.meanSquaredError = filteredDistances.reduce((acc, current) => acc + current * current, 0) / filteredDistances.length
+      result.correctBuildingPercentage = resultValues.reduce((acc, current) => acc + current.correctBuilding, 0) / resultValues.length
+      result.correctFloorPercentage = resultValues.reduce((acc, current) => acc + current.correctFloor, 0) / resultValues.length
       res.json(result)
     } catch (err) {
       res.status(400).json(err)
