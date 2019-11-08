@@ -3,6 +3,7 @@
 const mongoose = require('mongoose')
 require('../models/Sample') // Register model
 const Sample = mongoose.model('Sample')
+require('express-csv')
 
 const DEFAULT_RSSI = 0
 const K1 = 10
@@ -51,37 +52,15 @@ module.exports = {
   getLocationError: async (req, res) => {
     const query = Sample.find({ fingerprint: { '$ne': {} } }) // With at least one fingerprint
     query.lean()
-    try {
-      const samples = await query.exec()
-      // const samples = require('C:\\Users\\juan_\\Desktop\\samples.json')
-      //   .filter(s => Object.entries(s.fingerprint).length > 0)
-      //   .map(entry => {
-      //     ['_id', 'buildingId', 'floorId'].forEach(key => {
-      //       if (entry.hasOwnProperty(key)) {
-      //         entry[key] = new mongoose.Types.ObjectId(entry[key]); // Convert to ObjectId
-      //       }
-      //     })
-      //     return entry
-      //   })
-      if (samples === null) {
-        return res.status(404)
-      }
-      console.debug(`Calculating error for ${samples.length} samples...`)
-      res.json(calculateLocationsError(samples))
-    } catch (err) {
-      res.status(400).json(err)
-    }
-  },
 
-  getLocationErrorParametrized: async (req, res) => {
-    const query = Sample.find({ fingerprint: { '$ne': {} } }) // With at least one fingerprint
-    query.lean()
-    const k1Values = [2, 4, 6, 8, 10]
-    const k2Values = [2, 4, 6, 8, 10]
-    const floorAPNumberValues = [1, 2, 3, 4, 5, 6]
-    const minSamplesForPositionValues = [1, 3, 5]
-    const defaultRSSIValues = [0]
     try {
+      // Read query parameters, fall back to defaults, and parse to int (since we receive query params as strings)
+      const k1Values = parseOptionalNumberCollectionQueryParam(req.query, 'k1', K1) // [2, 4, 6, 8, 10]
+      const k2Values = parseOptionalNumberCollectionQueryParam(req.query, 'k2', K2) // [2, 4, 6, 8, 10]
+      const floorAPNumberValues = parseOptionalNumberCollectionQueryParam(req.query, 'floorAPNumber', FLOOR_AP_NUMBER) // [1, 2, 3, 4, 5, 6]
+      const minSamplesForPositionValues = parseOptionalNumberCollectionQueryParam(req.query, 'minSamplesForPosition', MIN_SAMPLES_FOR_POSITION) // [1, 3, 5]
+      const defaultRSSIValues = parseOptionalNumberCollectionQueryParam(req.query, 'defaultRSSI', DEFAULT_RSSI) // [0]
+
       const samples = await query.exec()
       // const samples = require('C:\\Users\\juan_\\Desktop\\samples.json')
       //   .filter(s => Object.entries(s.fingerprint).length > 0)
@@ -96,7 +75,6 @@ module.exports = {
       if (samples === null) {
         return res.status(404)
       }
-      console.debug(`Calculating error for ${samples.length} samples...`)
       // TODO rewrite this as a recursive function instead of 5 nested for
       let result = []
       k1Values.forEach((k1) => {
@@ -104,7 +82,7 @@ module.exports = {
           floorAPNumberValues.forEach((floorAPNumber) => {
             minSamplesForPositionValues.forEach((minSamplesForPosition) => {
               defaultRSSIValues.forEach((defaultRSSI) => {
-                console.log(`Calculating error for K1 = ${k1}, K2 = ${k2}, floorAPNumber = ${floorAPNumber}, minSamplesForPosition = ${minSamplesForPosition}, defaultRSSI = ${defaultRSSI}`)
+                console.log(`Calculating error for ${samples.length} samples with K1 = ${k1}, K2 = ${k2}, floorAPNumber = ${floorAPNumber}, minSamplesForPosition = ${minSamplesForPosition}, defaultRSSI = ${defaultRSSI}...`)
                 const run = calculateLocationsError(samples, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
                 result.push(run)
               })
@@ -112,21 +90,22 @@ module.exports = {
           })
         })
       })
-      res.json(result)
+      console.log('DONE WITH ALL RUNS')
+      return req.get('accept') === 'text/csv' ? res.csv(toCsv(result)) : res.json(result)
     } catch (err) {
       console.error(err)
       res.status(400).json(err)
     }
-  }
+  },
 }
 
 function calculateLocationsError (samples, defaultRSSI = DEFAULT_RSSI, k1 = K1, k2 = K2, floorAPNumber = FLOOR_AP_NUMBER, minSamplesForPosition = MIN_SAMPLES_FOR_POSITION) {
-  const result = {}
+  const entries = {}
   samples.forEach((sample) => {
     const filteredSampleId = sample._id
     const location = calculateLocationFilteringSample(samples, filteredSampleId, defaultRSSI, k1, k2, floorAPNumber, minSamplesForPosition)
     if (location.latitude !== null && location.longitude !== null && location.buildingId != null && location.floorId !== null) {
-      result[filteredSampleId] = {
+      entries[filteredSampleId] = {
         distance: getDistanceFromLatLonInKm(location.latitude, location.longitude, sample.latitude, sample.longitude) * 1000,
         buildingId: location.buildingId,
         realBuildingId: location.realBuildingId,
@@ -140,11 +119,11 @@ function calculateLocationsError (samples, defaultRSSI = DEFAULT_RSSI, k1 = K1, 
     }
   })
 
-  const resultValues = Object.values(result)
+  const resultValues = Object.values(entries)
   const filteredDistances = resultValues.map(entry => entry.distance).filter(d => !isNaN(d)) // Exclude NaN
 
   return {
-    ...result,
+    entries,
     errorMean: filteredDistances.reduce((acc, current) => acc + current, 0) / filteredDistances.length,
     meanSquaredError: filteredDistances.reduce((acc, current) => acc + current * current, 0) / filteredDistances.length,
     correctBuildingPercentage: resultValues.reduce((acc, current) => acc + current.correctBuilding, 0) / resultValues.length,
@@ -299,4 +278,48 @@ function manhattanDistance (fingerprint1, fingerprint2, defaultRSSI) {
     sumatorial += Math.abs(RSSI1 - RSSI2)
   })
   return sumatorial / unionSize - 2 * intersectionSize
+}
+
+/**
+ * Read an optional query parameter that is a number array.  If present, parse every element as integer. Otherwise,
+ * return one-element array with default value.
+ *
+ * @param queryParams {object} Express request query parameters from which to read.
+ * @param paramName {string} Parameter name.
+ * @param defaultValue {number} Default value.
+ * @returns {number[]} Result.
+ */
+function parseOptionalNumberCollectionQueryParam (queryParams, paramName, defaultValue) {
+  const value = queryParams[paramName]
+  if (value) {
+    return value.split(',').map(n => parseInt(n, 10))
+  } else {
+    return [defaultValue]
+  }
+}
+
+/**
+ * Preprocess data into nested arrays for CSV conversion.
+ *
+ * @param locationErrorResults {object[]} Results obtained from {@link calculateLocationsError}.
+ * @returns {*[][]} Array of arrays, where each sub-array is a row. First row is headers.
+ */
+function toCsv (locationErrorResults) {
+  // Headers first
+  const result = [[
+    'distance', 'buildingId', 'realBuildingId', 'correctBuilding', 'floorId', 'realFloorId', 'correctFloor', 'k1', 'k2', 'floorAPNumber', 'minSamplesForPosition', 'defaultRSSI',
+  ]]
+  // Now extract and denormalize data to allow CSV conversion
+  return result.concat(locationErrorResults.flatMap(run =>
+    Object.values(run.entries).map(entry =>
+      [
+        ...Object.values(entry),
+        run.k1,
+        run.k2,
+        run.floorAPNumber,
+        run.minSamplesForPosition,
+        run.defaultRSSI
+      ]
+    )
+  ))
 }
