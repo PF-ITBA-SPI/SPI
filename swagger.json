@@ -471,7 +471,8 @@
       "get": {
         "x-swagger-router-controller": "location",
         "operationId": "getLocationError",
-        "summary": "Calculate the errors of all samples",
+        "summary": "Calculate the errors of all samples with configurable algorithm parameters",
+        "description": "Multiple values can be passed for every parameter. The server will iterate over every possible combination of values and return an array of results for every fingerprint, for every set of parameter values.",
         "tags": [
           "/location"
         ],
@@ -481,40 +482,70 @@
           }
         ],
         "parameters": [
-        ],
-        "responses": {
-          "200": {
-            "$ref": "#/responses/200",
-            "schema": {
-              "$ref": "#/definitions/ErrorResult"
-            }
+          {
+            "in": "query",
+            "name": "k1",
+            "description": "K1 values. Multiple comma-separated values can be passed.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "collectionFormat": "csv"
           },
-          "400": {
-            "description": "Bad request"
-          }
-        }
-      }
-    },
-    "/getLocationErrorParametrized": {
-      "get": {
-        "x-swagger-router-controller": "location",
-        "operationId": "getLocationErrorParametrized",
-        "summary": "Calculate the errors of all samples for all the parameters in the function",
-        "tags": [
-          "/location"
-        ],
-        "security": [
           {
-            "ApiKey": []
+            "in": "query",
+            "name": "k2",
+            "description": "K2 values. Multiple comma-separated values can be passed.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "collectionFormat": "csv"
+          },
+          {
+            "in": "query",
+            "name": "floorAPNumber",
+            "description": "Number of best APs to consider when calculating floor. Multiple comma-separated values can be passed.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "collectionFormat": "csv"
+          },
+          {
+            "in": "query",
+            "name": "minSamplesForPosition",
+            "description": "Minimum number of APs required to calculate a floor. If less than this, the samples in the entire building are considered. Multiple comma-separated values can be passed.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "collectionFormat": "csv"
+          },
+          {
+            "in": "query",
+            "name": "defaultRSSI",
+            "description": "When comparing fingerprints, default RSSI to use when one AP is not present in another fingerprint. Multiple comma-separated values can be passed.",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "collectionFormat": "csv"
           }
-        ],
-        "parameters": [
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/200",
+            "description": "OK",
             "schema": {
-              "$ref": "#/definitions/ErrorResultParametrized"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ErrorResult"
+              }
             }
           },
           "400": {
@@ -723,10 +754,33 @@
         "B": -5
       }
     },
-    "ErrorList": {
+    "ErrorEntry": {
       "type": "object",
       "additionalProperties": {
-        "type": "number"
+        "type": "object",
+        "properties": {
+          "distance": {
+            "type": "number"
+          },
+          "buildingId": {
+            "type": "string"
+          },
+          "realBuildingId": {
+            "type": "string"
+          },
+          "correctBuilding": {
+            "type": "boolean"
+          },
+          "floorId": {
+            "type": "string"
+          },
+          "realFloorId": {
+            "type": "string"
+          },
+          "correctFloor": {
+            "type": "boolean"
+          }
+        }
       },
       "example": {
         "A": -35,
@@ -759,53 +813,58 @@
     "ErrorResult": {
       "type": "object",
       "properties": {
-        "distances": {
-          "$ref": "#/definitions/ErrorList"
+        "entries": {
+          "$ref": "#/definitions/ErrorEntry"
         },
         "errorMean": {
           "type": "number"
         },
         "meanSquaredError": {
           "type": "number"
+        },
+        "correctBuildingPercentage": {
+          "type": "number"
+        },
+        "correctFloorPercentage": {
+          "type": "number"
+        },
+        "k1": {
+          "type": "number"
+        },
+        "k2": {
+          "type": "number"
+        },
+        "floorAPNumber": {
+          "type": "number"
+        },
+        "minSamplesForPosition": {
+          "type": "number"
+        },
+        "defaultRSSI": {
+          "type": "number"
         }
       },
       "example": {
-        "distances": {"A": 232, "B":  21},
-        "errorMean": 5.3,
-        "meanSquaredError": 14.2
-      }
-    },
-    "ErrorResultParametrized": {
-      "type": "object",
-      "example": {
-        "1": {
-          "3": {
-            "3": {
-              "3": {
-                "0": {
-                  "distances": {"A": 232, "B":  21},
-                  "errorMean": 5.3,
-                  "meanSquaredError": 14.2
-                },
-                "10": {
-
-                }
-              },
-              "7": {
-
-              }
-            },
-            "10": {
-
-            }
-          },
-          "9": {
-
+        "entries": {
+          "5d4c6a419bcaba001cab140b": {
+            "distance": 7.367648968077218,
+            "buildingId": "5c9e6a3a469ebb001ca897b8",
+            "realBuildingId": "5c9e6a3a469ebb001ca897b8",
+            "correctBuilding": true,
+            "floorId": "5c9e6a3a469ebb001ca897c7",
+            "realFloorId": "5c9e6a3a469ebb001ca897c7",
+            "correctFloor": true
           }
         },
-        "5": {
-
-        }
+        "errorMean": 3.4896625188453,
+        "meanSquaredError": 17.209530716266254,
+        "correctBuildingPercentage": 1,
+        "correctFloorPercentage": 0.9584415584415584,
+        "k1": 10,
+        "k2": 10,
+        "floorAPNumber": 3,
+        "minSamplesForPosition": 3,
+        "defaultRSSI": 0
       }
     }
   },
