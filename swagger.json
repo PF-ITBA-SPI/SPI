@@ -538,6 +538,10 @@
             "collectionFormat": "csv"
           }
         ],
+        "produces": [
+          "application/json",
+          "text/csv"
+        ],
         "responses": {
           "200": {
             "description": "OK",

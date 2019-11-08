@@ -3,6 +3,7 @@
 const mongoose = require('mongoose')
 require('../models/Sample') // Register model
 const Sample = mongoose.model('Sample')
+require('express-csv')
 
 const DEFAULT_RSSI = 0
 const K1 = 10
@@ -90,7 +91,7 @@ module.exports = {
         })
       })
       console.log('DONE WITH ALL RUNS')
-      res.json(result)
+      return req.get('accept') === 'text/csv' ? res.csv(toCsv(result)) : res.json(result)
     } catch (err) {
       console.error(err)
       res.status(400).json(err)
@@ -295,4 +296,30 @@ function parseOptionalNumberCollectionQueryParam (queryParams, paramName, defaul
   } else {
     return [defaultValue]
   }
+}
+
+/**
+ * Preprocess data into nested arrays for CSV conversion.
+ *
+ * @param locationErrorResults {object[]} Results obtained from {@link calculateLocationsError}.
+ * @returns {*[][]} Array of arrays, where each sub-array is a row. First row is headers.
+ */
+function toCsv (locationErrorResults) {
+  // Headers first
+  const result = [[
+    'distance', 'buildingId', 'realBuildingId', 'correctBuilding', 'floorId', 'realFloorId', 'correctFloor', 'k1', 'k2', 'floorAPNumber', 'minSamplesForPosition', 'defaultRSSI',
+  ]]
+  // Now extract and denormalize data to allow CSV conversion
+  return result.concat(locationErrorResults.flatMap(run =>
+    Object.values(run.entries).map(entry =>
+      [
+        ...Object.values(entry),
+        run.k1,
+        run.k2,
+        run.floorAPNumber,
+        run.minSamplesForPosition,
+        run.defaultRSSI
+      ]
+    )
+  ))
 }
