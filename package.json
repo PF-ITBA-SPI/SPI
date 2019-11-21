@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "API para el proyecto final de Sistema de Posicionamiento en Interiores",
   "engines": {
-    "node": "10.9.0"
+    "node": "12"
   },
   "scripts": {
     "start:dev": "cross-env NODE_ENV=development nodemon api/server.js",

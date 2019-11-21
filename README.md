@@ -12,7 +12,7 @@ your local machine for development and testing purposes.
 
 ### Prerequisites
 
-- Node >= 10.9.0 < 11 - [downloads for 10.9.0](https://nodejs.org/dist/v10.9.0/)
+- Node >= 12 - [latest downloads for v12](https://nodejs.org/dist/latest-v12.x/)
   - **NOTE:** Node Version Manager (NVM) is highly recommended to use
   multiple versions of Node without conflict.  Use [nvm](https://github.com/creationix/nvm)
   for Linux/OS X, or [nvm-windows](https://github.com/coreybutler/nvm-windows)
@@ -23,7 +23,7 @@ your local machine for development and testing purposes.
 ### Installing
 
 1. Clone repo
-1. If you don't have the correct version of Node already, `nvm install 10.9.0`
+1. If you don't have the correct version of Node already, `nvm install 12`
 1. `npm install`
 
 ## Environment setup
