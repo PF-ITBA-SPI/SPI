@@ -115,12 +115,23 @@ function calculateLocationsError (samples, defaultRSSI = DEFAULT_RSSI, k1 = K1, 
         correctFloor: location.correctFloor,
       }
     } else {
-      // TODO what do we do here? Sample was not located anywhere
+      // Sample was not located anywhere
+      entries[filteredSampleId] = {
+        distance: null,
+        buildingId: null,
+        realBuildingId: null,
+        correctBuilding: false,
+        floorId: null,
+        realFloorId: null,
+        correctFloor: false,
+      }
     }
   })
 
   const resultValues = Object.values(entries)
-  const filteredDistances = resultValues.map(entry => entry.distance).filter(d => !isNaN(d)) // Exclude NaN
+  const filteredDistances = resultValues
+    .map(entry => entry.distance)
+    .filter(d => d !== null) // Exclude entries that weren't located
 
   return {
     entries,
@@ -128,6 +139,7 @@ function calculateLocationsError (samples, defaultRSSI = DEFAULT_RSSI, k1 = K1, 
     meanSquaredError: filteredDistances.reduce((acc, current) => acc + current * current, 0) / filteredDistances.length,
     correctBuildingPercentage: resultValues.reduce((acc, current) => acc + current.correctBuilding, 0) / resultValues.length,
     correctFloorPercentage: resultValues.reduce((acc, current) => acc + current.correctFloor, 0) / resultValues.length,
+    notLocatedCount: resultValues.length - filteredDistances.length,
     k1,
     k2,
     floorAPNumber,

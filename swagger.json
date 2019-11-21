@@ -832,6 +832,9 @@
         "correctFloorPercentage": {
           "type": "number"
         },
+        "notLocatedCount": {
+          "type": "number"
+        },
         "k1": {
           "type": "number"
         },
@@ -864,6 +867,7 @@
         "meanSquaredError": 17.209530716266254,
         "correctBuildingPercentage": 1,
         "correctFloorPercentage": 0.9584415584415584,
+        "notLocatedCount": 0,
         "k1": 10,
         "k2": 10,
         "floorAPNumber": 3,
