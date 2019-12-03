@@ -8,6 +8,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 console.log('App started in', process.env.NODE_ENV, 'mode')
+console.log('Algorithm parameters', ['K1', 'K2', 'M', 'N', 'DEFAULT_RSSI'].map(key => `${key}: ${process.env[key]}`).join(', '))
 
 const express = require('express')
 const cors = require('cors')
