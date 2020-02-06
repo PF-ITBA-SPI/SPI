@@ -43,7 +43,7 @@
     "mongoose": "^5.7.5",
     "swagger-express-router": "^1.0.0",
     "swagger-ui-express": "^4.0.1",
-    "snyk": "^1.258.1"
+    "snyk": "^1.290.1"
   },
   "snyk": true
 }
